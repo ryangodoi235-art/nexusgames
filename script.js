@@ -2,7 +2,7 @@
 // NEXUSGAMES - SISTEMA COMPLETO INTEGRADO
 // =========================
 
-const API_URL = 'https://nexusgames-api.onrender.com';
+const API_URL = 'https://nexusgames-llqj.onrender.com/';
 let usuarioLogado = null;
 let cartProducts = [];
 let todosJogos = [];
