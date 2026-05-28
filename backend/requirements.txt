@@ -1,6 +1,5 @@
 flask
 flask-cors
 psycopg2-binary
-scikit-learn
-joblib
-nltkgunicorn
+nltk
+gunicorn
