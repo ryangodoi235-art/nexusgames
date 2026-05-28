@@ -2,7 +2,7 @@
 // NEXUSGAMES - SISTEMA COMPLETO INTEGRADO
 // =========================
 
-const API_URL = 'http://127.0.0.1:5000';
+const API_URL = 'https://nexusgames-api.onrender.com';
 let usuarioLogado = null;
 let cartProducts = [];
 let todosJogos = [];
