@@ -1,0 +1,250 @@
+/* =========================
+   PERFIL - NEXUSGAMES
+========================= */
+
+.perfil-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.perfil-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.perfil-header h1 {
+    color: #c84dff;
+    font-size: 32px;
+}
+
+.voltar-btn {
+    background: #7c3aed;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.voltar-btn:hover {
+    background: #c84dff;
+    transform: translateY(-2px);
+}
+
+.loading-perfil {
+    text-align: center;
+    padding: 60px;
+    color: #999;
+}
+
+/* Card do Perfil */
+.perfil-card {
+    background: #12121a;
+    border-radius: 20px;
+    padding: 30px;
+    border: 1px solid rgba(138, 43, 226, 0.3);
+    margin-bottom: 30px;
+}
+
+.perfil-avatar {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.perfil-avatar span {
+    font-size: 80px;
+    background: linear-gradient(135deg, #7c3aed, #c84dff);
+    border-radius: 50%;
+    display: inline-block;
+    width: 120px;
+    height: 120px;
+    line-height: 120px;
+    text-align: center;
+}
+
+/* Formulário */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    color: #cfcfcf;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 12px 15px;
+    background: #16161f;
+    border: 1px solid #7c3aed;
+    border-radius: 10px;
+    color: white;
+    font-size: 16px;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #c84dff;
+    box-shadow: 0 0 10px rgba(200, 77, 255, 0.3);
+}
+
+.form-group input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+/* Botões */
+.btn-editar {
+    background: #7c3aed;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+    margin-right: 10px;
+}
+
+.btn-editar:hover {
+    background: #c84dff;
+    transform: translateY(-2px);
+}
+
+.btn-salvar {
+    background: #4caf50;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.btn-salvar:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+}
+
+.btn-cancelar {
+    background: #666;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+    margin-left: 10px;
+}
+
+.btn-cancelar:hover {
+    background: #555;
+}
+
+.btn-trocar-senha {
+    background: #ff9800;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.btn-trocar-senha:hover {
+    background: #e68900;
+    transform: translateY(-2px);
+}
+
+/* Mensagens */
+.mensagem {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.mensagem.sucesso {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4caf50;
+    border: 1px solid #4caf50;
+}
+
+.mensagem.erro {
+    background: rgba(244, 67, 54, 0.2);
+    color: #f44336;
+    border: 1px solid #f44336;
+}
+
+.mensagem.info {
+    background: rgba(33, 150, 243, 0.2);
+    color: #2196f3;
+    border: 1px solid #2196f3;
+}
+
+/* Estatísticas */
+.perfil-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: #16161f;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 28px;
+    font-weight: bold;
+    color: #c84dff;
+}
+
+.stat-label {
+    color: #999;
+    margin-top: 5px;
+    font-size: 12px;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .perfil-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .perfil-stats {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+}

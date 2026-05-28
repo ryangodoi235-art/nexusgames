@@ -1,0 +1,190 @@
+/* =========================
+   DASHBOARD MÉTRICAS - NEXUSGAMES
+========================= */
+
+.dashboard-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.dashboard-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.dashboard-header h1 {
+    color: #c84dff;
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+
+.dashboard-header p {
+    color: #999;
+}
+
+.status-message {
+    margin-top: 10px;
+    font-size: 12px;
+    padding: 8px;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.status-message.sucesso {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4caf50;
+    border: 1px solid #4caf50;
+}
+
+.status-message.aviso {
+    background: rgba(255, 152, 0, 0.2);
+    color: #ff9800;
+    border: 1px solid #ff9800;
+}
+
+.status-message.erro {
+    background: rgba(244, 67, 54, 0.2);
+    color: #f44336;
+    border: 1px solid #f44336;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.metric-card {
+    background: #12121a;
+    border-radius: 15px;
+    padding: 25px;
+    text-align: center;
+    border: 1px solid rgba(138, 43, 226, 0.3);
+    transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+    border-color: #7c3aed;
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.2);
+}
+
+.metric-value {
+    font-size: 48px;
+    font-weight: bold;
+    color: #c84dff;
+}
+
+.metric-label {
+    color: #999;
+    margin-top: 10px;
+}
+
+.pipeline-section {
+    background: #12121a;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 40px;
+    border: 1px solid rgba(138, 43, 226, 0.3);
+}
+
+.pipeline-section h2 {
+    color: #c84dff;
+    margin-bottom: 20px;
+}
+
+.pipeline-step {
+    display: flex;
+    align-items: center;
+    margin: 15px 0;
+    padding: 15px;
+    background: #1a1a2e;
+    border-radius: 10px;
+    transition: 0.3s;
+}
+
+.pipeline-step:hover {
+    background: #1f1f2e;
+    transform: translateX(5px);
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    background: #7c3aed;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-weight: bold;
+}
+
+.back-home {
+    display: inline-block;
+    margin-top: 20px;
+    color: #7c3aed;
+    text-decoration: none;
+    text-align: center;
+    width: 100%;
+    transition: 0.3s;
+}
+
+.back-home:hover {
+    color: #c84dff;
+    transform: translateX(-5px);
+}
+
+.info-text {
+    color: #ff9800;
+    text-align: center;
+    margin-top: 20px;
+    padding: 10px;
+    background: #1a1a2e;
+    border-radius: 10px;
+}
+
+@media (max-width: 768px) {
+    .dashboard-container {
+        margin: 20px auto;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .metric-value {
+        font-size: 36px;
+    }
+    
+    .dashboard-header h1 {
+        font-size: 28px;
+    }
+    
+    .pipeline-step {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .step-number {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-header h1 {
+        font-size: 24px;
+    }
+    
+    .metric-card {
+        padding: 15px;
+    }
+    
+    .metric-value {
+        font-size: 28px;
+    }
+}

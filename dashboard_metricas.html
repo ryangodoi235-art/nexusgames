@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard IA - NexusGames</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard_metricas.css">
+</head>
+<body>
+    <div class="site-container">
+        <header>
+            <div class="logo">
+                <img src="logo2.png" alt="NexusGames Logo">
+            </div>
+            <nav>
+                <a href="index.html">Início</a>
+                <a href="index.html#jogos">Jogos</a>
+                <a href="sobre.html">Sobre Nós</a>
+                <a href="meus_pedidos.html">📦 Meus Pedidos</a>
+                <a href="perfil.html">👤 Meu Perfil</a>
+                <a href="dashboard_metricas.html">📊 Dashboard IA</a>
+                <a href="contato.html">📧 Contato</a>
+            </nav>
+            <div class="header-actions">
+                <button id="cartBtn" onclick="window.location.href='checkout.html'">🛒 0</button>
+                <div class="login-container-header">
+                    <a href="login.html" id="loginBtn" title="login">👤</a>
+                    <button id="logoutBtn" title="Sair" style="display: none;">🚪</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <h1>📊 Dashboard de Inteligência Artificial</h1>
+                <p>Métricas do Modelo de Machine Learning para Análise de Sentimentos</p>
+                <div id="statusMsg" class="status-message"></div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value" id="acuracia">--</div>
+                    <div class="metric-label">🎯 Acurácia</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="precisao">--</div>
+                    <div class="metric-label">📊 Precisão</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="recall">--</div>
+                    <div class="metric-label">📈 Recall</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="f1">--</div>
+                    <div class="metric-label">🎯 F1-Score</div>
+                </div>
+            </div>
+
+            <div class="pipeline-section">
+                <h2>🔄 Pipeline de Dados</h2>
+                <div class="pipeline-step">
+                    <div class="step-number">1</div>
+                    <div><strong>Coleta</strong><br>Usuários escrevem comentários no site</div>
+                </div>
+                <div class="pipeline-step">
+                    <div class="step-number">2</div>
+                    <div><strong>Processamento</strong><br>Limpeza, remoção de stopwords, lower case, vetorização TF-IDF</div>
+                </div>
+                <div class="pipeline-step">
+                    <div class="step-number">3</div>
+                    <div><strong>Análise</strong><br>Classificação por modelo de ML (positivo/negativo/neutro)</div>
+                </div>
+                <div class="pipeline-step">
+                    <div class="step-number">4</div>
+                    <div><strong>Armazenamento</strong><br>Dados salvos no PostgreSQL (tabela comentarios)</div>
+                </div>
+                <div class="pipeline-step">
+                    <div class="step-number">5</div>
+                    <div><strong>Visualização</strong><br>Dashboard com estatísticas em tempo real</div>
+                </div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value" id="totalComentarios">--</div>
+                    <div class="metric-label">📝 Total de Comentários</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="positivos">--</div>
+                    <div class="metric-label">😊 Positivos</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="neutros">--</div>
+                    <div class="metric-label">😐 Neutros</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="negativos">--</div>
+                    <div class="metric-label">😔 Negativos</div>
+                </div>
+            </div>
+
+            <div class="info-text">
+                🤖 Modelo: Logistic Regression treinado com comentários em português
+            </div>
+
+            <a href="index.html" class="back-home">← Voltar para a loja</a>
+        </div>
+
+        <footer>
+            <div class="footer-links">
+                <a href="index.html">Início</a>
+                <a href="#jogos">Jogos</a>
+                <a href="sobre.html">Sobre Nós</a>
+                <a href="#">Suporte</a>
+                <a href="contato.html">Contato</a>
+            </div>
+            <div class="footer-contact">
+                <p>🎮 NexusGames</p>
+                <p>📧 suporte@nexusgames.com</p>
+            </div>
+            <div class="footer-copy">
+                © 2026 NexusGames - Todos os direitos reservados.
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="dashboard_metricas.js"></script>
+</body>
+</html>

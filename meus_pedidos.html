@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Pedidos - NexusGames</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="meus_pedido.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+    <div class="site-container">
+        <header>
+            <div class="logo">
+                <img src="logo2.png" alt="NexusGames Logo">
+            </div>
+            <nav>
+                <a href="index.html">Início</a>
+                <a href="index.html#jogos">Jogos</a>
+                <a href="index.html#sobre">Sobre Nós</a>
+                <a href="meus_pedidos.html">📦 Meus Pedidos</a>
+                <a href="perfil.html">👤 Meu Perfil</a>
+                <a href="dashboard_metricas.html">📊 Dashboard IA</a>
+                <a href="contato.html">📧 Contato</a>
+            </nav>
+            <div class="header-actions">
+                <button id="cartBtn" onclick="window.location.href='checkout.html'">🛒 0</button>
+                <div class="login-container-header">
+                    <a href="login.html" id="loginBtn" title="login">👤</a>
+                    <button id="logoutBtn" title="Sair" style="display: none;">🚪</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="pedidos-container">
+            <div class="pedidos-header">
+                <h1>📦 Meus Pedidos</h1>
+                <a href="index.html" class="voltar-btn">← Voltar para loja</a>
+            </div>
+            <div id="pedidosList">
+                <div class="loading-pedidos">⏳ Carregando seus pedidos...</div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="footer-links">
+                <a href="index.html">Início</a>
+                <a href="index.html#jogos">Jogos</a>
+                <a href="index.html#sobre">Sobre Nós</a>
+                <a href="#">Suporte</a>
+                <a href="#">Contato</a>
+            </div>
+            <div class="footer-contact">
+                <p>🎮 NexusGames</p>
+                <p>📧 suporte@nexusgames.com</p>
+            </div>
+            <div class="footer-copy">
+                © 2026 NexusGames - Todos os direitos reservados.
+            </div>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+    <script src="meus_pedidos.js"></script>
+</body>
+</html>

@@ -1,0 +1,208 @@
+/* =========================
+   MEUS PEDIDOS - NEXUSGAMES
+========================= */
+
+.pedidos-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.pedidos-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.pedidos-header h1 {
+    color: #c84dff;
+    font-size: 32px;
+}
+
+.voltar-btn {
+    background: #7c3aed;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.voltar-btn:hover {
+    background: #c84dff;
+    transform: translateY(-2px);
+}
+
+.loading-pedidos {
+    text-align: center;
+    padding: 60px;
+    color: #999;
+    font-size: 18px;
+}
+
+/* Card de Pedido */
+.pedido-card {
+    background: #12121a;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 25px;
+    border: 1px solid rgba(138, 43, 226, 0.3);
+    transition: 0.3s;
+}
+
+.pedido-card:hover {
+    border-color: #7c3aed;
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.2);
+}
+
+/* Cabeçalho do Pedido */
+.pedido-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 15px;
+}
+
+.pedido-numero {
+    font-size: 18px;
+    font-weight: bold;
+    color: #c84dff;
+}
+
+.pedido-data {
+    color: #999;
+    font-size: 14px;
+}
+
+/* Status do Pedido */
+.pedido-status {
+    background: #4caf50;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.pedido-status.entregue {
+    background: #4caf50;
+}
+
+.pedido-status.pendente {
+    background: #ff9800;
+}
+
+.pedido-status.cancelado {
+    background: #f44336;
+}
+
+.pedido-status.processando {
+    background: #2196f3;
+}
+
+/* Itens do Pedido */
+.pedido-itens {
+    margin: 15px 0;
+}
+
+.pedido-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.pedido-item-nome {
+    flex: 2;
+}
+
+.pedido-item-preco {
+    color: #c84dff;
+    font-weight: bold;
+}
+
+/* Total do Pedido */
+.pedido-total {
+    text-align: right;
+    padding-top: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #c84dff;
+}
+
+/* Sem Pedidos */
+.sem-pedidos {
+    text-align: center;
+    padding: 60px;
+    background: #12121a;
+    border-radius: 15px;
+}
+
+.sem-pedidos p {
+    margin-bottom: 20px;
+    color: #999;
+    font-size: 18px;
+}
+
+.sem-pedidos a {
+    background: #7c3aed;
+    color: white;
+    padding: 12px 25px;
+    border-radius: 10px;
+    text-decoration: none;
+    display: inline-block;
+    transition: 0.3s;
+}
+
+.sem-pedidos a:hover {
+    background: #c84dff;
+    transform: translateY(-2px);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .pedidos-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .pedido-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .pedido-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    .pedido-total {
+        text-align: left;
+    }
+}
+
+@media (max-width: 480px) {
+    .pedidos-container {
+        padding: 0 15px;
+    }
+
+    .pedidos-header h1 {
+        font-size: 24px;
+    }
+
+    .pedido-card {
+        padding: 15px;
+    }
+
+    .pedido-numero {
+        font-size: 14px;
+    }
+}

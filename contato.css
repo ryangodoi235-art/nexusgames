@@ -1,0 +1,100 @@
+/* =========================
+   CONTATO - NEXUSGAMES
+========================= */
+
+.contato-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.contato-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.contato-header h1 {
+    color: #c84dff;
+    font-size: 36px;
+}
+
+.contato-card {
+    background: #12121a;
+    border-radius: 20px;
+    padding: 30px;
+    border: 1px solid rgba(138, 43, 226, 0.3);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    color: #cfcfcf;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    background: #16161f;
+    border: 1px solid #7c3aed;
+    border-radius: 10px;
+    color: white;
+    font-size: 14px;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #c84dff;
+    box-shadow: 0 0 10px rgba(200, 77, 255, 0.3);
+}
+
+.btn-enviar {
+    background: linear-gradient(135deg, #7c3aed, #c84dff);
+    color: white;
+    padding: 14px 25px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    width: 100%;
+    font-weight: bold;
+    font-size: 16px;
+    transition: 0.3s;
+}
+
+.btn-enviar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(200, 77, 255, 0.4);
+}
+
+.info-contato {
+    margin-top: 30px;
+    text-align: center;
+    color: #999;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.info-contato p {
+    margin: 8px 0;
+}
+
+@media (max-width: 768px) {
+    .contato-container {
+        margin: 20px auto;
+    }
+    
+    .contato-card {
+        padding: 20px;
+    }
+    
+    .contato-header h1 {
+        font-size: 28px;
+    }
+}

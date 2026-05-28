@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexusGames</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+    <div class="site-container">
+
+    <header>
+        <div class="logo">
+            <img src="logo2.png" alt="NexusGames Logo">
+        </div>
+
+        <nav>
+            <a href="index.html">Início</a>
+            <a href="#jogos">Jogos</a>
+            <a href="sobre.html">Sobre Nós</a>
+            <a href="meus_pedidos.html">📦 Meus Pedidos</a>
+            <a href="perfil.html">👤 Meu Perfil</a>
+            <a href="dashboard_metricas.html">📊 Dashboard IA</a>
+            <a href="contato.html">📧 Contato</a>
+        </nav>
+
+        <div class="header-actions">
+            <input type="text" id="searchInput" placeholder="Buscar jogo...">
+            <button id="themeToggle" style="background: none; border: 1px solid #7c3aed; border-radius: 10px; padding: 8px 12px; cursor: pointer; font-size: 18px;">🌙</button>
+            <button id="cartBtn" onclick="window.location.href='checkout.html'">🛒 0</button>
+            <div class="login-container-header">
+                <a href="login.html" id="loginBtn" title="login">👤</a>
+                <button id="logoutBtn" title="Sair" style="display: none;">🚪</button>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Bem-vindo ao NexusGames</h1>
+            <p>Os melhores jogos digitais em um só lugar.</p>
+            <button onclick="document.getElementById('jogos').scrollIntoView({behavior: 'smooth'})">Explorar</button>
+        </div>
+    </section>
+
+    <section class="categories" id="categorias">
+        <button>🎯 FPS</button>
+        <button>⚔ RPG</button>
+        <button>🏎 Corrida</button>
+        <button>🔥 Aventura</button>
+        <button>🧱 Indie</button>
+    </section>
+
+    <section class="games-section" id="jogos">
+        <h2 style="padding-left: 8%;">🔥 Jogos em Destaque</h2>
+        <div class="games-grid" id="destaquesGrid" style="padding: 0 8% 40px 8%;">
+            <div class="loading">⏳ Carregando jogos em destaque...</div>
+        </div>
+
+        <div class="filtros-container" style="padding: 0 8%; margin-bottom: 30px;">
+            <div class="filtros-wrapper">
+                <button class="filtro-btn active" data-categoria="todos">🎮 Todos</button>
+                <button class="filtro-btn" data-categoria="Ação / Aventura">⚔️ Ação / Aventura</button>
+                <button class="filtro-btn" data-categoria="RPG">🗡️ RPG</button>
+                <button class="filtro-btn" data-categoria="RPG / Mundo Aberto">🌍 RPG Mundo Aberto</button>
+                <button class="filtro-btn" data-categoria="RPG / Ação">⚔️ RPG Ação</button>
+                <button class="filtro-btn" data-categoria="RPG / Soulslike">💀 Soulslike</button>
+                <button class="filtro-btn" data-categoria="FPS">🔫 FPS</button>
+                <button class="filtro-btn" data-categoria="Corrida">🏎️ Corrida</button>
+                <button class="filtro-btn" data-categoria="Esporte">⚽ Esporte</button>
+                <button class="filtro-btn" data-categoria="Sobrevivência">🏕️ Sobrevivência</button>
+                <button class="filtro-btn" data-categoria="Sandbox / Sobrevivência">🏗️ Sandbox</button>
+                <button class="filtro-btn" data-categoria="Simulação / Indie">🎨 Simulação / Indie</button>
+                <button class="filtro-btn" data-categoria="Roguelike / Ação">🎲 Roguelike</button>
+            </div>
+        </div>
+
+        <h2 style="padding-left: 8%; margin-top: 20px;">📚 Todos os Jogos</h2>
+        <div class="games-grid" id="todosJogosGrid" style="padding: 0 8% 40px 8%;">
+            <div class="loading">⏳ Carregando todos os jogos...</div>
+        </div>
+    </section>
+
+    <section id="sobre" class="about-section">
+        <div class="about-container">
+            <div class="about-text">
+                <h2>Sobre a NexusGames</h2>
+                <p>Nascida da paixão pela cultura gamer, a <strong>NexusGames</strong> é o ponto de encontro definitivo para quem busca os títulos mais épicos do mercado digital.</p>
+                <p>Nossa missão é conectar jogadores a experiências inesquecíveis, oferecendo um catálogo curado com os melhores lançamentos e suporte especializado.</p>
+                <div class="stats">
+                    <div class="stat-item"><span>+500</span><p>Jogos</p></div>
+                    <div class="stat-item"><span>24/7</span><p>Suporte</p></div>
+                </div>
+            </div>
+            <div class="about-image">
+                <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=1000" alt="Setup Gamer">
+            </div>
+        </div>
+    </section>
+
+    <section class="feedback-section">
+        <div class="feedback-header">
+            <h2>💬 Comentários da Comunidade</h2>
+            <p>Compartilhe sua experiência com a NexusGames</p>
+            <div id="serverStatus" style="margin-top: 10px; font-size: 14px;"></div>
+        </div>
+
+        <div class="feedback-container">
+            <div class="feedback-form-wrapper">
+                <div class="form-card">
+                    <h3>Deixe seu Comentário</h3>
+                    <div id="userInfo" style="margin-bottom: 15px; padding: 10px; background: #0f0f1a; border-radius: 10px;"></div>
+                    <div id="sentimentIndicator" style="display: none; margin-bottom: 20px; padding: 10px; border-radius: 10px; text-align: center;"></div>
+                    <form id="commentForm">
+                        <div class="input-group" style="display: none;">
+                            <label for="commentName">Seu nome</label>
+                            <input type="text" id="commentName" placeholder="Digite seu nome">
+                        </div>
+                        <div class="input-group">
+                            <label>Sua avaliação</label>
+                            <div class="rating-stars-container">
+                                <div class="rating-stars">
+                                    <input type="radio" name="rating" id="rating5" value="5"><label for="rating5">★</label>
+                                    <input type="radio" name="rating" id="rating4" value="4"><label for="rating4">★</label>
+                                    <input type="radio" name="rating" id="rating3" value="3"><label for="rating3">★</label>
+                                    <input type="radio" name="rating" id="rating2" value="2"><label for="rating2">★</label>
+                                    <input type="radio" name="rating" id="rating1" value="1"><label for="rating1">★</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="commentText">Seu comentário</label>
+                            <textarea id="commentText" rows="4" placeholder="Conte-nos sobre sua experiência..." required></textarea>
+                        </div>
+                        <button type="submit" class="submit-feedback-btn" id="submitBtn">
+                            <span>Enviar Comentário</span>
+                            <span class="btn-icon">→</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="feedback-list-wrapper">
+                <div class="list-header">
+                    <h3>📝 Comentários Recentes</h3>
+                    <div class="stats-badge"><span id="totalComments">0</span> comentários</div>
+                </div>
+                <div id="sentimentStats" style="margin-bottom: 20px; padding: 15px; background: #16161f; border-radius: 10px;">
+                    <div style="display: flex; justify-content: space-around; text-align: center;">
+                        <div><div style="color: #4caf50; font-size: 24px;" id="positiveCount">0</div><div>😊 Positivos</div></div>
+                        <div><div style="color: #ff9800; font-size: 24px;" id="neutralCount">0</div><div>😐 Neutros</div></div>
+                        <div><div style="color: #f44336; font-size: 24px;" id="negativeCount">0</div><div>😔 Negativos</div></div>
+                    </div>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <span style="color: #c84dff;">⭐ Média: </span>
+                        <span id="averageRating" style="color: #FFD700; font-weight: bold;">0.0</span>
+                    </div>
+                </div>
+                <div id="commentsList" class="feedbacks-list">
+                    <div class="empty-feedback"><p>⏳ Carregando comentários...</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-links">
+            <a href="index.html">Início</a>
+            <a href="#jogos">Jogos</a>
+            <a href="sobre.html">Sobre Nós</a>
+            <a href="#">Suporte</a>
+            <a href="contato.html">Contato</a>
+        </div>
+        <div class="footer-contact">
+            <p>🎮 NexusGames</p>
+            <p>📧 suporte@nexusgames.com</p>
+            <p>📱 WhatsApp: (11) 99999-9999</p>
+        </div>
+        <div class="footer-copy">
+            © 2026 NexusGames - Todos os direitos reservados.
+        </div>
+    </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    background:#050507;
+    color:white;
+
+    min-height:100vh;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    padding:20px;
+}
+
+.checkout-container{
+    width:100%;
+    max-width:1200px;
+
+    display:grid;
+    grid-template-columns:1fr 1fr;
+
+    gap:40px;
+}
+
+.order-summary,
+.payment-form{
+    background:#12121a;
+
+    border-radius:20px;
+
+    padding:35px;
+
+    border:1px solid rgba(138,43,226,.3);
+}
+
+h2{
+    margin-bottom:30px;
+    color:#c84dff;
+}
+
+.game-item,
+.total{
+    display:flex;
+    justify-content:space-between;
+
+    margin-bottom:20px;
+}
+
+.total{
+    margin-top:30px;
+
+    font-size:22px;
+    font-weight:bold;
+
+    border-top:1px solid rgba(255,255,255,.1);
+
+    padding-top:20px;
+}
+
+.input-group{
+    margin-bottom:20px;
+}
+
+.input-group label{
+    display:block;
+    margin-bottom:8px;
+    color:#ccc;
+}
+
+.input-group input{
+    width:100%;
+
+    padding:14px;
+
+    border:none;
+    outline:none;
+
+    border-radius:10px;
+
+    background:#1d1d28;
+    color:white;
+
+    border:1px solid #7c3aed;
+}
+
+.card-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+.pay-btn{
+    width:100%;
+
+    padding:16px;
+
+    border:none;
+    border-radius:12px;
+
+    cursor:pointer;
+
+    font-size:16px;
+    font-weight:bold;
+
+    color:white;
+
+    background:linear-gradient(
+        135deg,
+        #7c3aed,
+        #c84dff
+    );
+
+    margin-top:15px;
+}
+
+.pay-btn:hover{
+    transform:scale(1.02);
+}
+
+@media(max-width:900px){
+
+    .checkout-container{
+        grid-template-columns:1fr;
+    }
+
+}
+
+.remove-btn {
+    background: none;
+    border: none;
+    color: #ff4444;
+    cursor: pointer;
+    font-size: 18px;
+    transition: transform 0.2s;
+}
+
+.remove-btn:hover {
+    transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+    .checkout-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .order-summary,
+    .payment-form {
+        padding: 20px;
+    }
+    
+    .card-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .game-item {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+}
