@@ -7,40 +7,42 @@ import secrets
 from datetime import datetime
 import re
 import os
+import urllib.parse as urlparse
 
 app = Flask(__name__)
 CORS(app)
 
 # ===================== CONFIGURAÇÃO DO BANCO =====================
+# Usar DATABASE_URL do Render
+DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://nexususer:nexus123@localhost:5432/nexusgames_db')
+
+# Parse da URL
+url = urlparse.urlparse(DATABASE_URL)
+
 DB_CONFIG = {
-    'host': os.environ.get('DB_HOST', 'localhost'),
-    'database': os.environ.get('DB_NAME', 'nexusgames_db'),
-    'user': os.environ.get('DB_USER', 'nexususer'),
-    'password': os.environ.get('DB_PASSWORD', 'nexus123'),
-    'port': os.environ.get('DB_PORT', 5432)
+    'host': url.hostname,
+    'database': url.path[1:],
+    'user': url.username,
+    'password': url.password,
+    'port': url.port or 5432,
+    'sslmode': 'require'
 }
+
+print(f"📊 Conectando ao banco: {DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['database']}")
 
 def get_db():
     return psycopg2.connect(**DB_CONFIG)
 
-# ===================== ROTA RAIZ (para não dar 404) =====================
+# ===================== ROTA RAIZ =====================
 @app.route('/', methods=['GET'])
 def home():
     return jsonify({
         'status': 'online',
         'mensagem': 'API NexusGames está rodando!',
-        'versao': '1.0.0',
-        'endpoints': [
-            '/api/teste',
-            '/api/jogos',
-            '/api/comentarios',
-            '/api/chatbot',
-            '/api/metricas',
-            '/api/estatisticas'
-        ]
+        'versao': '1.0.0'
     })
 
-# ===================== ROTA DE TESTE =====================
+# ===================== TESTE =====================
 @app.route('/api/teste', methods=['GET'])
 def teste():
     return jsonify({'status': 'online', 'mensagem': 'Servidor rodando!'})
@@ -83,7 +85,7 @@ def listar_comentarios():
         conn.close()
         return jsonify(comentarios)
     except Exception as e:
-        print(f"Erro listar comentários: {e}")
+        print(f"Erro: {e}")
         return jsonify([])
 
 @app.route('/api/comentarios', methods=['POST'])
@@ -123,7 +125,7 @@ def salvar_comentario():
         
         return jsonify({'status': 'sucesso', 'sentimento': sentimento})
     except Exception as e:
-        print(f"Erro salvar: {e}")
+        print(f"Erro: {e}")
         return jsonify({'erro': str(e)}), 500
 
 @app.route('/api/analisar', methods=['POST'])
@@ -163,7 +165,6 @@ def estatisticas():
         stats = cursor.fetchone()
         cursor.close()
         conn.close()
-        
         return jsonify({
             'total': stats['total'] or 0,
             'positivos': stats['positivos'] or 0,
@@ -172,7 +173,7 @@ def estatisticas():
             'media_rating': round(float(stats['media_rating']), 1)
         })
     except Exception as e:
-        print(f"Erro estatísticas: {e}")
+        print(f"Erro: {e}")
         return jsonify({'total': 0, 'positivos': 0, 'negativos': 0, 'neutros': 0, 'media_rating': 0})
 
 # ===================== MÉTRICAS =====================
@@ -183,9 +184,7 @@ def metricas():
         'acurácia': 85,
         'precisao': 84,
         'recall': 85,
-        'f1_score': 84,
-        'classes': ['positivo', 'negativo', 'neutro'],
-        'descricao': 'Modelo treinado com comentários em português'
+        'f1_score': 84
     })
 
 # ===================== CHATBOT =====================
@@ -194,44 +193,23 @@ def chatbot():
     try:
         dados = request.json
         pergunta = dados.get('pergunta', '').lower()
-        usuario_id = dados.get('usuario_id', None)
         
-        # Recomendações por categoria
         if 'ação' in pergunta or 'acao' in pergunta:
-            return jsonify({'resposta': '🎮 **Recomendações de jogos de AÇÃO**\n\n1️⃣ **Grand Theft Auto V**\n   ⭐ 4.8/5 | 💰 R$ 349,00\n\n2️⃣ **Red Dead Redemption 2**\n   ⭐ 4.9/5 | 💰 R$ 299,00\n\n3️⃣ **Marvel\'s Spider-Man 2**\n   ⭐ 4.8/5 | 💰 R$ 299,00', 'sucesso': True})
+            return jsonify({'resposta': '🎮 **Recomendações de jogos de AÇÃO**\n\n1️⃣ **Grand Theft Auto V**\n   ⭐ 4.8/5 | 💰 R$ 349,00\n\n2️⃣ **Red Dead Redemption 2**\n   ⭐ 4.9/5 | 💰 R$ 299,00', 'sucesso': True})
         
         if 'rpg' in pergunta:
-            return jsonify({'resposta': '🗡️ **Recomendações de jogos RPG**\n\n1️⃣ **The Witcher 3**\n   ⭐ 4.9/5 | 💰 R$ 63,00\n\n2️⃣ **Cyberpunk 2077**\n   ⭐ 4.5/5 | 💰 R$ 249,00\n\n3️⃣ **Elden Ring**\n   ⭐ 4.9/5 | 💰 R$ 349,00', 'sucesso': True})
+            return jsonify({'resposta': '🗡️ **Recomendações de jogos RPG**\n\n1️⃣ **The Witcher 3**\n   ⭐ 4.9/5 | 💰 R$ 63,00\n\n2️⃣ **Cyberpunk 2077**\n   ⭐ 4.5/5 | 💰 R$ 249,00', 'sucesso': True})
         
-        # Saudação
-        if any(p in pergunta for p in ['olá', 'oi', 'opa', 'bom dia', 'boa tarde', 'boa noite']):
-            return jsonify({'resposta': '👋 Olá! Sou o assistente da NexusGames. Posso ajudar com:\n\n• Recomendar jogos\n• Informar preços\n• Explicar como comprar\n• Falar sobre promoções\n\n*O que você gostaria de saber?*', 'sucesso': True})
+        if any(p in pergunta for p in ['olá', 'oi', 'bom dia', 'boa tarde', 'boa noite']):
+            return jsonify({'resposta': '👋 Olá! Sou o assistente da NexusGames. Pergunte sobre jogos, preços, entrega ou pagamento!', 'sucesso': True})
         
-        # Preços
         if 'preço' in pergunta or 'precos' in pergunta:
-            return jsonify({'resposta': '💰 **TABELA DE PREÇOS**\n\n• Jogos variam de R$ 45 a R$ 349\n• Jogos físicos custam 10% a mais\n• Parcelamos em até 6x sem juros\n• PIX tem 10% de desconto!', 'sucesso': True})
+            return jsonify({'resposta': '💰 Preços de R$ 45 a R$ 349. Jogos físicos custam 10% a mais. PIX tem 10% de desconto!', 'sucesso': True})
         
-        # Entrega
-        if 'entrega' in pergunta:
-            return jsonify({'resposta': '📦 **ENTREGA**\n\n• Jogos digitais: Imediata\n• Jogos físicos: 5-7 dias úteis\n• Frete grátis para compras acima de R$ 200', 'sucesso': True})
-        
-        # Pagamento
-        if 'pagamento' in pergunta:
-            return jsonify({'resposta': '💳 **FORMAS DE PAGAMENTO**\n\n• Cartão de Crédito (até 6x)\n• Cartão de Débito\n• PIX (10% off)\n• Boleto Bancário', 'sucesso': True})
-        
-        # Ajuda
-        if 'ajuda' in pergunta:
-            return jsonify({'resposta': '🤖 **COMANDOS DISPONÍVEIS**\n\n• "recomende ação" - Jogos de ação\n• "recomende RPG" - Jogos de RPG\n• "preços" - Tabela de preços\n• "entrega" - Informações de entrega\n• "pagamento" - Formas de pagamento', 'sucesso': True})
-        
-        # Resposta padrão
-        return jsonify({
-            'resposta': '🤔 **Não entendi sua pergunta.**\n\nTente perguntar:\n• "recomende ação"\n• "recomende RPG"\n• "preços"\n• "entrega"\n• "pagamento"',
-            'sucesso': True
-        })
+        return jsonify({'resposta': '🤔 Não entendi. Tente: "recomende ação", "recomende RPG", "preços", "entrega"', 'sucesso': True})
         
     except Exception as e:
-        print(f"Erro chatbot: {e}")
-        return jsonify({'resposta': '❌ Erro no servidor. Tente novamente!', 'sucesso': False}), 500
+        return jsonify({'resposta': '❌ Erro', 'sucesso': False}), 500
 
 # ===================== USUÁRIOS =====================
 @app.route('/api/cadastrar', methods=['POST'])
@@ -241,10 +219,6 @@ def cadastrar():
         nome = dados.get('nome')
         email = dados.get('email')
         senha = dados.get('senha')
-        cep = dados.get('cep')
-        endereco = dados.get('endereco')
-        cidade = dados.get('cidade')
-        estado = dados.get('estado')
         
         if not nome or len(nome) < 3:
             return jsonify({'erro': 'Nome muito curto'}), 400
@@ -258,9 +232,9 @@ def cadastrar():
         conn = get_db()
         cursor = conn.cursor()
         cursor.execute("""
-            INSERT INTO usuarios (nome, email, senha_hash, cep, endereco, cidade, estado)
-            VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id
-        """, (nome, email, senha_hash, cep, endereco, cidade, estado))
+            INSERT INTO usuarios (nome, email, senha_hash)
+            VALUES (%s, %s, %s) RETURNING id
+        """, (nome, email, senha_hash))
         usuario_id = cursor.fetchone()[0]
         conn.commit()
         cursor.close()
@@ -270,7 +244,6 @@ def cadastrar():
     except psycopg2.IntegrityError:
         return jsonify({'erro': 'Email já cadastrado'}), 400
     except Exception as e:
-        print(f"Erro cadastrar: {e}")
         return jsonify({'erro': str(e)}), 500
 
 @app.route('/api/login', methods=['POST'])
@@ -298,7 +271,6 @@ def login():
         else:
             return jsonify({'erro': 'Email ou senha inválidos'}), 401
     except Exception as e:
-        print(f"Erro login: {e}")
         return jsonify({'erro': str(e)}), 500
 
 if __name__ == '__main__':
