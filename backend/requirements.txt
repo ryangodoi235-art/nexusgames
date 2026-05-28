@@ -3,4 +3,4 @@ flask-cors
 psycopg2-binary
 scikit-learn
 joblib
-nltk
+nltkgunicorn
