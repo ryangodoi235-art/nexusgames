@@ -27,7 +27,7 @@ def jogos():
         'jogos': [
             {'id': 1, 'nome': 'Grand Theft Auto V', 'preco': 349.00, 'categoria': 'Ação / Mundo Aberto', 'imagem_url': 'images/1.png', 'rating': 4.8, 'destaque': True},
             {'id': 2, 'nome': 'Red Dead Redemption 2', 'preco': 299.00, 'categoria': 'Ação / Aventura', 'imagem_url': 'images/2.png', 'rating': 4.9, 'destaque': True},
-            {'id': 3, 'nome': 'The Witcher 3', 'preco': 63.00, 'categoria': 'RPG', 'imagem_url': 'images/5.png', 'rating': 4.9, 'destaque': True},
+            {'id': 3, 'nome': 'The Witcher 3', 'preco': 63.00, 'categoria': 'RPG', 'imagem_url': 'images/5.png', 'rating': 4.9, 'destaque': True}
         ]
     })
 
@@ -50,7 +50,7 @@ def chatbot():
     respostas = {
         'preço': '💰 Os preços variam de R$ 45 a R$ 349!',
         'preco': '💰 Os preços variam de R$ 45 a R$ 349!',
-        'gta': '🚗 GTA V está R$ 349,00',
+        'gta': '🚗 Grand Theft Auto V - R$ 349,00',
         'rpg': '⚔️ Recomendo The Witcher 3 ou Elden Ring!',
         'obrigado': '🎮 Por nada! Volte sempre!'
     }
