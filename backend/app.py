@@ -1,281 +1,76 @@
+# No início do arquivo, adicione a importação
+import google.generativeai as genai
 from flask import Flask, request, jsonify
-from flask_cors import CORS
-import psycopg2
-from psycopg2.extras import RealDictCursor
-import hashlib
-import secrets
-from datetime import datetime
-import re
 import os
-import urllib.parse as urlparse
 
-app = Flask(__name__)
-CORS(app)
+# Configurar o Gemini com a chave da API (pegando do ambiente)
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
+    gemini_model = genai.GenerativeModel('gemini-1.5-flash')  # Modelo rápido e eficiente
+    print("✅ Gemini API configurada com sucesso!")
+else:
+    gemini_model = None
+    print("⚠️ GEMINI_API_KEY não encontrada. Chatbot usará respostas locais.")
 
-# ===================== CONFIGURAÇÃO DO BANCO =====================
-# Usar DATABASE_URL do Render
-DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://nexususer:nexus123@localhost:5432/nexusgames_db')
-
-# Parse da URL
-url = urlparse.urlparse(DATABASE_URL)
-
-DB_CONFIG = {
-    'host': url.hostname,
-    'database': url.path[1:],
-    'user': url.username,
-    'password': url.password,
-    'port': url.port or 5432,
-    'sslmode': 'require'
-}
-
-print(f"📊 Conectando ao banco: {DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['database']}")
-
-def get_db():
-    return psycopg2.connect(**DB_CONFIG)
-
-# ===================== ROTA RAIZ =====================
-@app.route('/', methods=['GET'])
-def home():
-    return jsonify({
-        'status': 'online',
-        'mensagem': 'API NexusGames está rodando!',
-        'versao': '1.0.0'
-    })
-
-# ===================== TESTE =====================
-@app.route('/api/teste', methods=['GET'])
-def teste():
-    return jsonify({'status': 'online', 'mensagem': 'Servidor rodando!'})
-
-# ===================== JOGOS =====================
-@app.route('/api/jogos', methods=['GET'])
-def listar_jogos():
+# ============================================
+# NOVA ROTA: CHATBOT COM GEMINI
+# ============================================
+@app.route('/api/chatbot/gemini', methods=['POST'])
+def chatbot_gemini():
+    """Endpoint para o chatbot usando Gemini API"""
     try:
-        conn = get_db()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        cursor.execute("""
-            SELECT id, nome, preco, categoria, imagem_url, rating, destaque 
-            FROM jogos 
-            ORDER BY destaque DESC, rating DESC
-        """)
-        jogos = cursor.fetchall()
-        cursor.close()
-        conn.close()
-        return jsonify({'jogos': jogos})
+        dados = request.get_json()
+        pergunta = dados.get('pergunta', '').strip()
+        
+        if not pergunta:
+            return jsonify({'resposta': 'Por favor, digite uma pergunta.'}), 400
+        
+        # Se não tem API Key configurada, usa respostas locais
+        if not gemini_model:
+            return jsonify({'resposta': obter_resposta_local(pergunta)}), 200
+        
+        # Criar um prompt com contexto da NexusGames
+        prompt_contexto = f"""
+Você é o NexusBot, assistente virtual da NexusGames - uma loja de jogos.
+Responda de forma amigável, usando emojis quando apropriado.
+Mantenha as respostas curtas e diretas (máximo 2 frases).
+
+Pergunta do usuário: {pergunta}
+
+Resposta (como NexusBot):
+"""
+        
+        # Chamar a API do Gemini
+        resposta = gemini_model.generate_content(prompt_contexto)
+        texto_resposta = resposta.text.strip()
+        
+        return jsonify({'resposta': texto_resposta}), 200
+        
     except Exception as e:
-        print(f"Erro: {e}")
-        return jsonify({'jogos': []})
+        print(f"Erro no Gemini: {e}")
+        # Fallback para resposta local em caso de erro
+        return jsonify({'resposta': obter_resposta_local(pergunta)}), 200
 
-# ===================== COMENTÁRIOS =====================
-@app.route('/api/comentarios', methods=['GET'])
-def listar_comentarios():
-    try:
-        conn = get_db()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        cursor.execute("""
-            SELECT c.id, u.nome, c.comentario, c.rating, c.sentimento,
-                   TO_CHAR(c.data_comentario, 'DD/MM/YYYY HH24:MI') as data_formatada
-            FROM comentarios c
-            JOIN usuarios u ON c.usuario_id = u.id
-            ORDER BY c.data_comentario DESC
-            LIMIT 50
-        """)
-        comentarios = cursor.fetchall()
-        cursor.close()
-        conn.close()
-        return jsonify(comentarios)
-    except Exception as e:
-        print(f"Erro: {e}")
-        return jsonify([])
+def obter_resposta_local(pergunta):
+    """Função de fallback caso a API Gemini falhe"""
+    pergunta_lower = pergunta.lower()
+    
+    if 'preço' in pergunta_lower or 'custa' in pergunta_lower:
+        return '💰 Os preços dos nossos jogos variam de R$ 45 a R$ 349!'
+    elif 'promoção' in pergunta_lower or 'desconto' in pergunta_lower:
+        return '🎉 Temos promoções toda semana! Fique de olho na página inicial.'
+    elif 'entrega' in pergunta_lower:
+        return '📦 Jogos digitais chegam na hora! Jogos físicos levam de 3 a 7 dias úteis.'
+    elif 'rpg' in pergunta_lower:
+        return '⚔️ Recomendo The Witcher 3, Elden Ring ou Baldur\'s Gate 3!'
+    else:
+        return '🤔 Obrigado pela pergunta! Um atendente humano responderá em breve pelo e-mail suporte@nexusgames.com'
 
-@app.route('/api/comentarios', methods=['POST'])
-def salvar_comentario():
-    try:
-        dados = request.json
-        usuario_id = dados.get('usuario_id')
-        comentario = dados.get('comentario')
-        rating = dados.get('rating')
-        
-        if not usuario_id:
-            return jsonify({'erro': 'Usuário não logado'}), 401
-        
-        if not comentario or len(comentario) < 5:
-            return jsonify({'erro': 'Comentário muito curto'}), 400
-        
-        # Análise simples de sentimento
-        sentimento = 'neutro'
-        palavras_pos = ['legal', 'bom', 'ótimo', 'excelente', 'maravilhoso', 'incrível', 'gostei', 'adorei']
-        palavras_neg = ['ruim', 'péssimo', 'horrível', 'detestei', 'odiei', 'lento']
-        
-        texto_lower = comentario.lower()
-        if any(p in texto_lower for p in palavras_pos):
-            sentimento = 'positivo'
-        elif any(n in texto_lower for n in palavras_neg):
-            sentimento = 'negativo'
-        
-        conn = get_db()
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO comentarios (usuario_id, comentario, rating, sentimento)
-            VALUES (%s, %s, %s, %s)
-        """, (usuario_id, comentario, rating, sentimento))
-        conn.commit()
-        cursor.close()
-        conn.close()
-        
-        return jsonify({'status': 'sucesso', 'sentimento': sentimento})
-    except Exception as e:
-        print(f"Erro: {e}")
-        return jsonify({'erro': str(e)}), 500
-
-@app.route('/api/analisar', methods=['POST'])
-def analisar():
-    try:
-        dados = request.json
-        comentario = dados.get('comentario', '')
-        sentimento = 'neutro'
-        palavras_pos = ['legal', 'bom', 'ótimo', 'excelente', 'maravilhoso', 'incrível', 'gostei', 'adorei']
-        palavras_neg = ['ruim', 'péssimo', 'horrível', 'detestei', 'odiei', 'lento']
-        
-        texto_lower = comentario.lower()
-        if any(p in texto_lower for p in palavras_pos):
-            sentimento = 'positivo'
-        elif any(n in texto_lower for n in palavras_neg):
-            sentimento = 'negativo'
-        
-        return jsonify({'sentimento': sentimento})
-    except Exception as e:
-        return jsonify({'erro': str(e)}), 500
-
-# ===================== ESTATÍSTICAS =====================
-@app.route('/api/estatisticas', methods=['GET'])
-def estatisticas():
-    try:
-        conn = get_db()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        cursor.execute("""
-            SELECT 
-                COUNT(*) as total,
-                COUNT(CASE WHEN sentimento = 'positivo' THEN 1 END) as positivos,
-                COUNT(CASE WHEN sentimento = 'negativo' THEN 1 END) as negativos,
-                COUNT(CASE WHEN sentimento = 'neutro' THEN 1 END) as neutros,
-                COALESCE(AVG(rating), 0) as media_rating
-            FROM comentarios
-        """)
-        stats = cursor.fetchone()
-        cursor.close()
-        conn.close()
-        return jsonify({
-            'total': stats['total'] or 0,
-            'positivos': stats['positivos'] or 0,
-            'negativos': stats['negativos'] or 0,
-            'neutros': stats['neutros'] or 0,
-            'media_rating': round(float(stats['media_rating']), 1)
-        })
-    except Exception as e:
-        print(f"Erro: {e}")
-        return jsonify({'total': 0, 'positivos': 0, 'negativos': 0, 'neutros': 0, 'media_rating': 0})
-
-# ===================== MÉTRICAS =====================
-@app.route('/api/metricas', methods=['GET'])
-def metricas():
-    return jsonify({
-        'modelo': 'Logistic Regression',
-        'acurácia': 85,
-        'precisao': 84,
-        'recall': 85,
-        'f1_score': 84
-    })
-
-# ===================== CHATBOT =====================
+# ============================================
+# ROTA ANTIGA DO CHATBOT (para compatibilidade)
+# ============================================
 @app.route('/api/chatbot', methods=['POST'])
-def chatbot():
-    try:
-        dados = request.json
-        pergunta = dados.get('pergunta', '').lower()
-        
-        if 'ação' in pergunta or 'acao' in pergunta:
-            return jsonify({'resposta': '🎮 **Recomendações de jogos de AÇÃO**\n\n1️⃣ **Grand Theft Auto V**\n   ⭐ 4.8/5 | 💰 R$ 349,00\n\n2️⃣ **Red Dead Redemption 2**\n   ⭐ 4.9/5 | 💰 R$ 299,00', 'sucesso': True})
-        
-        if 'rpg' in pergunta:
-            return jsonify({'resposta': '🗡️ **Recomendações de jogos RPG**\n\n1️⃣ **The Witcher 3**\n   ⭐ 4.9/5 | 💰 R$ 63,00\n\n2️⃣ **Cyberpunk 2077**\n   ⭐ 4.5/5 | 💰 R$ 249,00', 'sucesso': True})
-        
-        if any(p in pergunta for p in ['olá', 'oi', 'bom dia', 'boa tarde', 'boa noite']):
-            return jsonify({'resposta': '👋 Olá! Sou o assistente da NexusGames. Pergunte sobre jogos, preços, entrega ou pagamento!', 'sucesso': True})
-        
-        if 'preço' in pergunta or 'precos' in pergunta:
-            return jsonify({'resposta': '💰 Preços de R$ 45 a R$ 349. Jogos físicos custam 10% a mais. PIX tem 10% de desconto!', 'sucesso': True})
-        
-        return jsonify({'resposta': '🤔 Não entendi. Tente: "recomende ação", "recomende RPG", "preços", "entrega"', 'sucesso': True})
-        
-    except Exception as e:
-        return jsonify({'resposta': '❌ Erro', 'sucesso': False}), 500
-
-# ===================== USUÁRIOS =====================
-@app.route('/api/cadastrar', methods=['POST'])
-def cadastrar():
-    try:
-        dados = request.json
-        nome = dados.get('nome')
-        email = dados.get('email')
-        senha = dados.get('senha')
-        
-        if not nome or len(nome) < 3:
-            return jsonify({'erro': 'Nome muito curto'}), 400
-        if not email or '@' not in email:
-            return jsonify({'erro': 'Email inválido'}), 400
-        if not senha or len(senha) < 6:
-            return jsonify({'erro': 'Senha muito curta'}), 400
-        
-        senha_hash = hashlib.sha256(senha.encode()).hexdigest()
-        
-        conn = get_db()
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO usuarios (nome, email, senha_hash)
-            VALUES (%s, %s, %s) RETURNING id
-        """, (nome, email, senha_hash))
-        usuario_id = cursor.fetchone()[0]
-        conn.commit()
-        cursor.close()
-        conn.close()
-        
-        return jsonify({'status': 'sucesso', 'id': usuario_id})
-    except psycopg2.IntegrityError:
-        return jsonify({'erro': 'Email já cadastrado'}), 400
-    except Exception as e:
-        return jsonify({'erro': str(e)}), 500
-
-@app.route('/api/login', methods=['POST'])
-def login():
-    try:
-        dados = request.json
-        email = dados.get('email')
-        senha = dados.get('senha')
-        
-        senha_hash = hashlib.sha256(senha.encode()).hexdigest()
-        
-        conn = get_db()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        cursor.execute("""
-            SELECT id, nome, email, admin FROM usuarios 
-            WHERE email = %s AND senha_hash = %s
-        """, (email, senha_hash))
-        usuario = cursor.fetchone()
-        cursor.close()
-        conn.close()
-        
-        if usuario:
-            token = secrets.token_hex(32)
-            return jsonify({'status': 'sucesso', 'usuario': usuario, 'token': token})
-        else:
-            return jsonify({'erro': 'Email ou senha inválidos'}), 401
-    except Exception as e:
-        return jsonify({'erro': str(e)}), 500
-
-if __name__ == '__main__':
-    print("=" * 50)
-    print("🚀 Servidor NexusGames rodando!")
-    print("📍 http://127.0.0.1:5000")
-    print("=" * 50)
-    app.run(debug=True, host='0.0.0.0', port=5000)
+def chatbot_legado():
+    """Mantido para compatibilidade com código antigo"""
+    return chatbot_gemini()
