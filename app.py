@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, request
 import os
 
 app = Flask(__name__, static_folder='.', static_url_path='')
@@ -44,21 +44,22 @@ def estatisticas():
 
 @app.route('/api/chatbot', methods=['POST'])
 def chatbot():
-    from flask import request
     dados = request.get_json()
     pergunta = dados.get('pergunta', '').lower()
     
     respostas = {
         'preço': '💰 Os preços variam de R$ 45 a R$ 349!',
+        'preco': '💰 Os preços variam de R$ 45 a R$ 349!',
         'gta': '🚗 GTA V está R$ 349,00',
-        'rpg': '⚔️ Recomendo The Witcher 3 ou Elden Ring!'
+        'rpg': '⚔️ Recomendo The Witcher 3 ou Elden Ring!',
+        'obrigado': '🎮 Por nada! Volte sempre!'
     }
     
     for palavra, resposta in respostas.items():
         if palavra in pergunta:
             return jsonify({'resposta': resposta})
     
-    return jsonify({'resposta': 'Obrigado! Em breve um atendente responderá.'})
+    return jsonify({'resposta': 'Obrigado pela pergunta! Envie email para suporte@nexusgames.com 📧'})
 
 @app.route('/api/metricas')
 def metricas():
