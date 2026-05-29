@@ -1,11 +1,13 @@
 [build]
-  command = "echo 'Construindo site estático...'"
+  command = "echo '🚀 Netlify - Apenas frontend estático'"
   publish = "."
-
-[build.environment]
-  NODE_VERSION = "18"
 
 [[redirects]]
   from = "/api/*"
-  to = "https://nexusgames-api.onrender.com/api/:splat"
+  to = "https://nexusgames-llqj.onrender.com/api/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
   status = 200
