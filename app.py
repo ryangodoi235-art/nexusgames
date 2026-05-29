@@ -1,14 +1,8 @@
-cd /home/ryan/Documentos/nexusgames
-
-cat > app.py << 'EOF'
 from flask import Flask, jsonify, send_from_directory, request
 import os
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 
-# ============================================
-# ROTAS ESTÁTICAS (Frontend)
-# ============================================
 @app.route('/')
 def home():
     return send_from_directory('.', 'index.html')
@@ -17,9 +11,6 @@ def home():
 def serve_static(path):
     return send_from_directory('.', path)
 
-# ============================================
-# ROTAS DA API
-# ============================================
 @app.route('/api/teste')
 def teste():
     return jsonify({'status': 'online', 'message': 'API funcionando!'})
@@ -38,8 +29,7 @@ def jogos():
 def comentarios():
     if request.method == 'GET':
         return jsonify([])
-    else:
-        return jsonify({'mensagem': 'Comentário recebido!', 'sentimento': 'positivo'})
+    return jsonify({'mensagem': 'Comentário recebido!', 'sentimento': 'positivo'})
 
 @app.route('/api/estatisticas')
 def estatisticas():
@@ -71,4 +61,3 @@ def metricas():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
-EOF
