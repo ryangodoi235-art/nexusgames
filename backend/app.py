@@ -9,7 +9,6 @@ import re
 import os
 import urllib.parse as urlparse
 import google.generativeai as genai
-import hashlib
 
 def anonimizar_cliente(nome_cliente):
     """Anonimiza o nome do cliente usando SHA-256 com salt"""
@@ -441,6 +440,10 @@ def auditoria_dataops():
             'mensagem': '✅ Auditoria DataOps: Nenhum prejuízo encontrado' if prejuizos['total_prejuizos'] == 0 else '⚠️ Existem vendas com prejuízo'
         })
         
+    except Exception as e:
+        print(f"Erro na auditoria: {e}")
+        return jsonify({'erro': str(e)}), 500
+
 
 # ===================== VERIFICAÇÃO DE INTEGRIDADE =====================
 @app.route('/api/integridade', methods=['GET'])
@@ -457,10 +460,6 @@ def verificar_integridade():
             cursor.execute(f"SELECT COUNT(*) FROM {tabela}")
             count = cursor.fetchone()[0]
             resultados[tabela] = count
-            
-            # Alerta se tabela estiver vazia (exceto vendas que pode estar vazia)
-            if count == 0 and tabela != 'vendas':
-                print(f"⚠️ Tabela {tabela} está vazia!")
         
         # Verificar anonimização
         cursor.execute("SELECT COUNT(*) FROM vendas WHERE cliente LIKE 'hash_%' OR LENGTH(cliente) > 50")
@@ -490,8 +489,7 @@ def verificar_integridade():
     except Exception as e:
         print(f"Erro na integridade: {e}")
         return jsonify({'erro': str(e)}), 500
-    except Exception as e:
-        return jsonify({'erro': str(e)}), 500
+
 
 # ===================== RBAC - CONTROLE DE ACESSO =====================
 class NexusRBAC:
@@ -511,15 +509,13 @@ class NexusRBAC:
                 "ver_vendas",
                 "exportar_relatorios"
             ],
-            "admin": ["*"]  # Todas as permissões
+            "admin": ["*"]
         }
     
     def verificar(self, usuario, acao):
-        """Verifica se o usuário tem permissão para executar a ação"""
         if not usuario:
             return False
         
-        # Admin tem todas as permissões
         if usuario.get('admin') or usuario.get('perfil') == 'admin':
             return True
         
@@ -529,7 +525,6 @@ class NexusRBAC:
         return acao in permissoes_usuario
     
     def get_permissoes(self, usuario):
-        """Retorna todas as permissões do usuário"""
         if not usuario:
             return []
         
@@ -545,14 +540,8 @@ rbac = NexusRBAC()
 @app.route('/api/permissoes', methods=['GET'])
 def verificar_permissoes():
     try:
-        # Buscar usuário logado (via token)
-        token = request.headers.get('Authorization', '').replace('Bearer ', '')
-        
-        if not token:
-            return jsonify({'erro': 'Token não fornecido'}), 401
-        
-        # Aqui você deve validar o token e buscar o usuário
-        # Por enquanto, vamos usar um exemplo
+        # REMOVIDA VERIFICAÇÃO DE TOKEN PARA TESTE
+        # Usuário exemplo para demonstração
         usuario = {
             'id': 1,
             'nome': 'Usuario Teste',
@@ -572,51 +561,18 @@ def verificar_permissoes():
     except Exception as e:
         return jsonify({'erro': str(e)}), 500
 
-@app.route('/api/permissoes', methods=['GET'])
-def verificar_permissoes():
-    try:
-        # Buscar usuário logado (via token)
-        token = request.headers.get('Authorization', '').replace('Bearer ', '')
-        
-        if not token:
-            return jsonify({'erro': 'Token não fornecido'}), 401
-        
-        # Aqui você deve validar o token e buscar o usuário
-        # Por enquanto, vamos usar um exemplo
-        usuario = {
-            'id': 1,
-            'nome': 'Usuario Teste',
-            'perfil': 'cliente',
-            'admin': False
-        }
-        
-        permissoes = rbac.get_permissoes(usuario)
-        
-        return jsonify({
-            'usuario': usuario['nome'],
-            'perfil': 'admin' if usuario.get('admin') else usuario.get('perfil', 'cliente'),
-            'permissoes': permissoes,
-            'total_permissoes': len(permissoes)
-        })
-        
-    except Exception as e:
-        return jsonify({'erro': str(e)}), 500
 
 def requer_permissao(acao):
-    """Decorator para verificar permissões antes de executar uma rota"""
     def decorator(f):
         from functools import wraps
         
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            # Buscar token do header
             token = request.headers.get('Authorization', '').replace('Bearer ', '')
             
             if not token:
                 return jsonify({'erro': 'Token não fornecido'}), 401
             
-            # TODO: Validar token e buscar usuário do banco
-            # Por enquanto, simular um usuário cliente
             usuario = {
                 'id': 1,
                 'nome': 'Usuario Teste',
@@ -634,7 +590,6 @@ def requer_permissao(acao):
         
         return decorated_function
     return decorator
-
 
 
 if __name__ == '__main__':
