@@ -17,6 +17,8 @@ const msgDiv = document.getElementById('msg');
 const nomeInput = document.getElementById('nome');
 const cepInput = document.getElementById('cep');
 const enderecoInput = document.getElementById('endereco');
+const numeroInput = document.getElementById('numero');
+const complementoInput = document.getElementById('complemento');
 const cidadeInput = document.getElementById('cidade');
 const estadoSelect = document.getElementById('estado');
 const emailInput = document.getElementById('email');
@@ -74,10 +76,10 @@ async function buscarCEP() {
         const data = await response.json();
         
         if (!data.erro) {
-            enderecoInput.value = `${data.logradouro}, ${data.bairro}`;
+            enderecoInput.value = data.logradouro;
             cidadeInput.value = data.localidade;
             estadoSelect.value = data.uf;
-            mostrarMensagem('✅ Endereço preenchido automaticamente!', 'sucesso');
+            mostrarMensagem('✅ Rua preenchida! Informe o número.', 'sucesso');
         } else {
             mostrarMensagem('⚠️ CEP não encontrado', 'erro');
         }
@@ -92,7 +94,6 @@ async function buscarCEP() {
 
 async function obterLocalizacao() {
     const btn = document.getElementById('btnLocalizarCEP');
-    const cepInputLocal = document.getElementById('cep');
     
     if (!navigator.geolocation) {
         mostrarMensagem('❌ Seu navegador não suporta geolocalização', 'erro');
@@ -106,7 +107,6 @@ async function obterLocalizacao() {
         async (position) => {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
-            console.log('Coordenadas:', lat, lng);
             
             await buscarCEPporCoordenadas(lat, lng);
             btn.disabled = false;
@@ -114,21 +114,7 @@ async function obterLocalizacao() {
         },
         (error) => {
             console.error('Erro de geolocalização:', error);
-            let mensagem = '';
-            switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    mensagem = 'Permissão negada. Ative a localização no navegador.';
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    mensagem = 'Localização indisponível.';
-                    break;
-                case error.TIMEOUT:
-                    mensagem = 'Tempo esgotado. Tente novamente.';
-                    break;
-                default:
-                    mensagem = 'Erro ao obter localização.';
-            }
-            mostrarMensagem(`❌ ${mensagem}`, 'erro');
+            mostrarMensagem('❌ Permissão negada. Digite o CEP manualmente.', 'erro');
             btn.disabled = false;
             btn.innerHTML = '📍 Usar localização';
         }
@@ -143,45 +129,22 @@ async function buscarCEPporCoordenadas(lat, lng) {
         if (data.address) {
             let cep = data.address.postcode?.replace(/[^0-9]/g, '');
             const logradouro = data.address.road || '';
-            const bairro = data.address.suburb || data.address.neighbourhood || '';
             const cidade = data.address.city || data.address.town || data.address.village;
             const estado = data.address.state_code?.toUpperCase() || '';
             
             if (cep && cep.length === 8) {
                 document.getElementById('cep').value = cep;
-                document.getElementById('endereco').value = `${logradouro}, ${bairro}`;
+                document.getElementById('endereco').value = logradouro;
                 document.getElementById('cidade').value = cidade;
                 document.getElementById('estado').value = estado;
-                mostrarMensagem('✅ Localização detectada! Endereço preenchido.', 'sucesso');
-                
-                await buscarDetalhesCEP(cep);
+                mostrarMensagem('✅ Localização detectada!', 'sucesso');
             } else {
-                mostrarMensagem('⚠️ Não foi possível obter o CEP pela localização. Digite manualmente.', 'erro');
+                mostrarMensagem('⚠️ Não foi possível obter o CEP.', 'erro');
             }
         }
     } catch (error) {
         console.error('Erro ao buscar endereço:', error);
-        mostrarMensagem('❌ Erro ao obter endereço. Digite o CEP manualmente.', 'erro');
-    }
-}
-
-async function buscarDetalhesCEP(cep) {
-    const cepLimpo = cep.replace(/\D/g, '');
-    if (cepLimpo.length !== 8) return;
-    
-    try {
-        const response = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
-        const data = await response.json();
-        
-        if (!data.erro) {
-            if (document.getElementById('endereco').value === '') {
-                document.getElementById('endereco').value = `${data.logradouro}, ${data.bairro}`;
-            }
-            document.getElementById('cidade').value = data.localidade;
-            document.getElementById('estado').value = data.uf;
-        }
-    } catch (error) {
-        console.error('Erro ao buscar detalhes:', error);
+        mostrarMensagem('❌ Erro ao obter endereço.', 'erro');
     }
 }
 
@@ -196,7 +159,7 @@ async function handleSubmit(e) {
     const senha = senhaInput.value;
     
     if (!email || !senha) {
-        mostrarMensagem('❌ Preencha todos os campos', 'erro');
+        mostrarMensagem('❌ Preencha email e senha', 'erro');
         return;
     }
     
@@ -234,6 +197,8 @@ async function handleSubmit(e) {
         const nome = nomeInput.value.trim();
         const cep = cepInput.value.trim();
         const endereco = enderecoInput.value.trim();
+        const numero = numeroInput?.value.trim() || '';
+        const complemento = complementoInput?.value.trim() || '';
         const cidade = cidadeInput.value.trim();
         const estado = estadoSelect.value;
         
@@ -244,6 +209,16 @@ async function handleSubmit(e) {
         
         if (!cep) {
             mostrarMensagem('❌ Digite seu CEP para entrega', 'erro');
+            return;
+        }
+        
+        if (!endereco) {
+            mostrarMensagem('❌ Digite seu endereço', 'erro');
+            return;
+        }
+        
+        if (!numero) {
+            mostrarMensagem('❌ Digite o número da casa', 'erro');
             return;
         }
         
@@ -259,7 +234,7 @@ async function handleSubmit(e) {
             const response = await fetch(`${API_URL}/api/cadastrar`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nome, email, senha, cep, endereco, cidade, estado })
+                body: JSON.stringify({ nome, email, senha, cep, endereco, numero, complemento, cidade, estado })
             });
             
             const data = await response.json();
@@ -270,6 +245,8 @@ async function handleSubmit(e) {
                 nomeInput.value = '';
                 cepInput.value = '';
                 enderecoInput.value = '';
+                if (numeroInput) numeroInput.value = '';
+                if (complementoInput) complementoInput.value = '';
                 cidadeInput.value = '';
                 estadoSelect.value = '';
                 emailInput.value = '';
@@ -304,13 +281,11 @@ if (toggleLink) {
     });
 }
 
-// Botão de localização
 const btnLocalizar = document.getElementById('btnLocalizarCEP');
 if (btnLocalizar) {
     btnLocalizar.addEventListener('click', obterLocalizacao);
 }
 
-// Buscar CEP automaticamente
 if (cepInput) {
     cepInput.addEventListener('blur', buscarCEP);
 }
@@ -327,6 +302,6 @@ if (form) {
 const usuarioLogado = localStorage.getItem('nexus_usuario');
 if (usuarioLogado && window.location.pathname.includes('login.html')) {
     setTimeout(() => {
-    window.location.href = 'index.html';
+        window.location.href = 'index.html';
     }, 1500);
 }
