@@ -27,10 +27,12 @@ async function buscarCEP() {
         const data = await response.json();
 
         if (!data.erro) {
-            document.getElementById('enderecoEntrega').value = `${data.logradouro}, ${data.bairro}`;
+            document.getElementById('enderecoEntrega').value = data.logradouro;
             document.getElementById('cidadeEntrega').value = data.localidade;
             document.getElementById('estadoEntrega').value = data.uf;
-            alert('✅ Endereço preenchido automaticamente!');
+            document.getElementById('numeroEntrega').value = '';
+            document.getElementById('complementoEntrega').value = '';
+            alert('✅ Rua preenchida! Informe o número e complemento.');
         } else {
             alert('❌ CEP não encontrado!');
         }
@@ -82,13 +84,15 @@ window.removeGame = function(index) {
 
 function validatePayment() {
     const endereco = document.getElementById("enderecoEntrega")?.value.trim();
+    const numero = document.getElementById("numeroEntrega")?.value.trim();
     const cidade = document.getElementById("cidadeEntrega")?.value.trim();
     const cardName = document.getElementById("cardName")?.value.trim();
     const cardNumber = document.getElementById("cardNumber")?.value.trim();
     const cardExpiry = document.getElementById("cardExpiry")?.value.trim();
     const cardCvv = document.getElementById("cardCvv")?.value.trim();
 
-    if (!endereco) { alert("Digite o endereço de entrega!"); return false; }
+    if (!endereco) { alert("Digite o endereço!"); return false; }
+    if (!numero) { alert("Digite o número da casa!"); return false; }
     if (!cidade) { alert("Digite a cidade!"); return false; }
     if (!cardName) { alert("Digite o nome no cartão"); return false; }
     if (!cardNumber || cardNumber.replace(/\s/g, '').length < 16) { alert("Número de cartão inválido"); return false; }
@@ -108,19 +112,18 @@ if (paymentForm) {
 
         if (!validatePayment()) return;
 
-        // Criar novo pedido
-const novoPedido = {
-    numero: Math.floor(100000 + Math.random() * 900000),
-    data: new Date().toLocaleString('pt-BR'),
-    total: savedGames.reduce((sum, game) => sum + game.price, 0),
-    itens: savedGames.map(game => ({ 
-        nome: game.name, 
-        preco: game.price,
-        tipo_midia: game.tipo_midia || 'digital'
-    })),
-    status: 'entregue'
-};
-        // Salvar no histórico
+        const novoPedido = {
+            numero: Math.floor(100000 + Math.random() * 900000),
+            data: new Date().toLocaleString('pt-BR'),
+            total: savedGames.reduce((sum, game) => sum + game.price, 0),
+            itens: savedGames.map(game => ({ 
+                nome: game.name, 
+                preco: game.price,
+                tipo_midia: game.tipo_midia || 'digital'
+            })),
+            status: 'entregue'
+        };
+        
         const pedidos = JSON.parse(localStorage.getItem('nexus_pedidos') || '[]');
         pedidos.unshift(novoPedido);
         localStorage.setItem('nexus_pedidos', JSON.stringify(pedidos));
@@ -139,4 +142,3 @@ const novoPedido = {
 }
 
 renderCheckout();
-
