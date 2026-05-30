@@ -187,31 +187,60 @@ def metricas():
         'f1_score': 84
     })
 
-# ===================== CHATBOT =====================
+# ===================== CHATBOT COM GEMINI =====================
+# Configurar Gemini
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+gemini_model = None
+
+if GEMINI_API_KEY:
+    try:
+        genai.configure(api_key=GEMINI_API_KEY)
+        gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+        print("✅ Gemini API configurada!")
+    except Exception as e:
+        print(f"⚠️ Erro Gemini: {e}")
+else:
+    print("⚠️ Gemini não configurado")
+
 @app.route('/api/chatbot', methods=['POST'])
 def chatbot():
     try:
         dados = request.json
-        pergunta = dados.get('pergunta', '').lower()
+        pergunta = dados.get('pergunta', '').strip().lower()
         
+        if not pergunta:
+            return jsonify({'resposta': 'Digite uma pergunta!', 'sucesso': False})
+        
+        # Usar Gemini se disponível
+        if gemini_model:
+            try:
+                prompt = f"""Você é o NexusBot da NexusGames (loja de jogos).
+Responda de forma amigável, com emojis, em até 2 frases.
+Pergunta: {pergunta}
+Resposta:"""
+                resposta = gemini_model.generate_content(prompt)
+                return jsonify({'resposta': resposta.text.strip(), 'sucesso': True})
+            except:
+                pass  # Fallback para respostas locais
+        
+        # Respostas locais (fallback)
         if 'ação' in pergunta or 'acao' in pergunta:
-            return jsonify({'resposta': '🎮 **Recomendações de jogos de AÇÃO**\n\n1️⃣ **Grand Theft Auto V**\n   ⭐ 4.8/5 | 💰 R$ 349,00\n\n2️⃣ **Red Dead Redemption 2**\n   ⭐ 4.9/5 | 💰 R$ 299,00', 'sucesso': True})
-        
+            return jsonify({'resposta': '🎮 Recomendo: Grand Theft Auto V (R$349) ou Red Dead Redemption 2 (R$299)!', 'sucesso': True})
         if 'rpg' in pergunta:
-            return jsonify({'resposta': '🗡️ **Recomendações de jogos RPG**\n\n1️⃣ **The Witcher 3**\n   ⭐ 4.9/5 | 💰 R$ 63,00\n\n2️⃣ **Cyberpunk 2077**\n   ⭐ 4.5/5 | 💰 R$ 249,00', 'sucesso': True})
+            return jsonify({'resposta': '🗡️ Recomendo: The Witcher 3 (R$63) ou Cyberpunk 2077 (R$249)!', 'sucesso': True})
+        if any(p in pergunta for p in ['olá', 'oi', 'bom dia', 'boa tarde']):
+            return jsonify({'resposta': '👋 Olá! Pergunte sobre jogos, preços, entrega ou pagamento!', 'sucesso': True})
+        if 'preço' in pergunta or 'preco' in pergunta:
+            return jsonify({'resposta': '💰 Preços de R$45 a R$349. PIX tem 10% de desconto!', 'sucesso': True})
+        if 'entrega' in pergunta:
+            return jsonify({'resposta': '📦 Jogos digitais na hora! Físicos: 3-7 dias úteis.', 'sucesso': True})
         
-        if any(p in pergunta for p in ['olá', 'oi', 'bom dia', 'boa tarde', 'boa noite']):
-            return jsonify({'resposta': '👋 Olá! Sou o assistente da NexusGames. Pergunte sobre jogos, preços, entrega ou pagamento!', 'sucesso': True})
-        
-        if 'preço' in pergunta or 'precos' in pergunta:
-            return jsonify({'resposta': '💰 Preços de R$ 45 a R$ 349. Jogos físicos custam 10% a mais. PIX tem 10% de desconto!', 'sucesso': True})
-        
-        return jsonify({'resposta': '🤔 Não entendi. Tente: "recomende ação", "recomende RPG", "preços", "entrega"', 'sucesso': True})
+        return jsonify({'resposta': '🤔 Tente: "recomende ação", "recomende RPG", "preços" ou "entrega"', 'sucesso': True})
         
     except Exception as e:
-        return jsonify({'resposta': '❌ Erro', 'sucesso': False}), 500
+        return jsonify({'resposta': '❌ Erro, tente novamente!', 'sucesso': False}), 500
 
-# ===================== USUÁRIOS =====================
+# =================== USUARIOS =====================
 @app.route('/api/cadastrar', methods=['POST'])
 def cadastrar():
     try:
