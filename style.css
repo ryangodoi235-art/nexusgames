@@ -1,3 +1,10 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+body {
+    font-family: 'Share Tech Mono', 'Courier New', monospace;
+}
+
 /* =========================
    RESET
 ========================= */
@@ -939,4 +946,203 @@ header {
 
 body.light-mode #themeToggle {
     background: #7c3aed20;
+}
+/* ============================================
+   COMMAND CENTER STYLE - CYBER/HIGH-TECH
+   ============================================ */
+
+/* Variáveis do tema Command Center */
+:root {
+    --cyber-primary: #06b6d4;
+    --cyber-secondary: #8b5cf6;
+    --cyber-dark: #0f172a;
+    --cyber-darker: #020617;
+    --cyber-green: #4ade80;
+    --cyber-red: #ef4444;
+    --cyber-yellow: #fbbf24;
+    --cyber-text: #94a3b8;
+}
+
+/* Glassmorphism para cards */
+.game-card, .feedback-card, .perfil-card, .metric-card {
+    background: rgba(15, 23, 42, 0.9) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(6, 182, 212, 0.2) !important;
+    transition: all 0.3s ease;
+}
+
+.game-card:hover, .metric-card:hover {
+    border-color: var(--cyber-primary) !important;
+    transform: translateY(-5px);
+    box-shadow: 0 0 25px rgba(6, 182, 212, 0.3);
+}
+
+/* Títulos no estilo cyber */
+h1, h2, h3 {
+    background: linear-gradient(135deg, var(--cyber-primary), var(--cyber-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+}
+
+h1::before {
+    content: "> ";
+    color: var(--cyber-green);
+    -webkit-text-fill-color: var(--cyber-green);
+}
+
+/* Botões estilo terminal */
+.buy-btn, .submit-feedback-btn, .btn-enviar, .btn-editar, .btn-salvar {
+    background: linear-gradient(135deg, #06b6d4, #8b5cf6) !important;
+    border: none !important;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+.buy-btn:hover, .submit-feedback-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
+}
+
+/* Efeito de scanline (linhas de varredura) */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15) 0px,
+        rgba(0, 0, 0, 0.15) 2px,
+        transparent 2px,
+        transparent 6px
+    );
+    z-index: 9998;
+}
+
+/* Header estilo cyber */
+header {
+    background: rgba(2, 6, 23, 0.95) !important;
+    border-bottom: 2px solid var(--cyber-primary) !important;
+    backdrop-filter: blur(10px);
+}
+
+/* Navegação estilo terminal */
+nav a {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+    position: relative;
+}
+
+nav a::before {
+    content: "> ";
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+nav a:hover::before {
+    opacity: 1;
+}
+
+/* Inputs estilo terminal */
+#searchInput, .input-group input, .input-group textarea {
+    background: #1e293b !important;
+    border: 1px solid #334155 !important;
+    color: var(--cyber-text) !important;
+    font-family: 'Courier New', monospace;
+}
+
+#searchInput:focus, .input-group input:focus {
+    border-color: var(--cyber-primary) !important;
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+}
+
+/* Cards de métricas com glow */
+.metric-card .metric-value {
+    text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+}
+
+/* Pipeline steps estilo cyber */
+.pipeline-step {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border-left: 3px solid var(--cyber-primary);
+}
+
+.step-number {
+    background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+}
+
+/* Dashboard financeiro - cards cyber */
+.stat-card, .metric-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::after, .metric-card::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cyber-primary), transparent);
+    animation: scan 3s linear infinite;
+}
+
+@keyframes scan {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* Status de estoque (se tiver) */
+.estoque-baixo {
+    color: var(--cyber-red);
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Botão do chatbot estilo cyber */
+#chat-abrir, #chatbotBtn {
+    background: linear-gradient(135deg, #06b6d4, #8b5cf6) !important;
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
+}
+
+/* Scrollbar cyber */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0f172a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+    border-radius: 3px;
+}
+
+/* Hero section cyber */
+.hero {
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(6, 182, 212, 0.1) 0%, transparent 70%);
+    pointer-events: none;
 }
