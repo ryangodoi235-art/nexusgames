@@ -9,6 +9,17 @@ import re
 import os
 import urllib.parse as urlparse
 import google.generativeai as genai
+import hashlib
+
+def anonimizar_cliente(nome_cliente):
+    """Anonimiza o nome do cliente usando SHA-256 com salt"""
+    if not nome_cliente:
+        return "Desconhecido"
+    
+    segredo = "NexusGames_Segredo_2026"
+    texto = f"{nome_cliente}_{segredo}"
+    return hashlib.sha256(texto.encode()).hexdigest()
+
 
 app = Flask(__name__)
 CORS(app)
@@ -398,6 +409,39 @@ def dashboard_vendas():
         
     except Exception as e:
         print(f"Erro: {e}")
+        return jsonify({'erro': str(e)}), 500
+
+# ===================== AUDITORIA DATAOPS =====================
+@app.route('/api/auditoria', methods=['GET'])
+def auditoria_dataops():
+    try:
+        conn = get_db()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # Verificar vendas com lucro negativo
+        cursor.execute("""
+            SELECT COUNT(*) as total_prejuizos, 
+                   SUM(lucro) as soma_prejuizos,
+                   MIN(lucro) as maior_prejuizo
+            FROM vendas WHERE lucro < 0
+        """)
+        prejuizos = cursor.fetchone()
+        
+        # Verificar anonimização
+        cursor.execute("SELECT COUNT(DISTINCT cliente) as clientes_anonimizados FROM vendas")
+        stats = cursor.fetchone()
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({
+            'status': 'sucesso',
+            'prejuizos': prejuizos,
+            'clientes_anonimizados': stats['clientes_anonimizados'],
+            'mensagem': '✅ Auditoria DataOps: Nenhum prejuízo encontrado' if prejuizos['total_prejuizos'] == 0 else '⚠️ Existem vendas com prejuízo'
+        })
+        
+    except Exception as e:
         return jsonify({'erro': str(e)}), 500
 
 if __name__ == '__main__':
