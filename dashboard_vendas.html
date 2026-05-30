@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Financeiro - NexusGames</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #0a0a1a, #0f0f2a);
+            color: white;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 { text-align: center; margin-bottom: 30px; background: linear-gradient(135deg, #c84dff, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: rgba(18, 18, 26, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #7c3aed;
+            backdrop-filter: blur(10px);
+        }
+        .card h3 { color: #c84dff; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; }
+        .valor { font-size: 32px; font-weight: bold; color: #4caf50; }
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .chart-card {
+            background: rgba(18, 18, 26, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid #7c3aed;
+        }
+        .chart-card h3 { color: #c84dff; margin-bottom: 15px; }
+        canvas { max-height: 300px; width: 100% !important; }
+        .full-width { grid-column: span 2; }
+        @media (max-width: 900px) {
+            .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+            .charts-grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+        }
+        .loading { text-align: center; padding: 50px; color: #c84dff; }
+        .footer { text-align: center; margin-top: 30px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 NexusGames - Dashboard Financeiro</h1>
+        
+        <div class="dashboard-grid" id="cards">
+            <div class="card"><h3>💰 Faturamento Total</h3><div class="valor" id="faturamento">--</div></div>
+            <div class="card"><h3>📦 Lucro Total</h3><div class="valor" id="lucro">--</div></div>
+            <div class="card"><h3>📈 Margem Média</h3><div class="valor" id="margem">--</div></div>
+            <div class="card"><h3>🎮 Total de Vendas</h3><div class="valor" id="totalVendas">--</div></div>
+        </div>
+        
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>🏆 Top 10 Jogos por Faturamento</h3>
+                <canvas id="topJogosChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>📅 Vendas Mensais</h3>
+                <canvas id="vendasMensalChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>🎯 Lucro por Categoria</h3>
+                <canvas id="categoriaChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>💳 Formas de Pagamento</h3>
+                <canvas id="pagamentoChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>📊 Dados atualizados em tempo real | NexusGames - Pipeline de Dados Financeiros</p>
+        </div>
+    </div>
+    
+    <script>
+        async function carregarDashboard() {
+            try {
+                const response = await fetch('/api/dashboard/vendas');
+                const data = await response.json();
+                
+                // Atualizar cards
+                document.getElementById('faturamento').innerText = 'R$ ' + (data.totais.faturamento_total || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('lucro').innerText = 'R$ ' + (data.totais.lucro_total || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('margem').innerText = (data.totais.margem_media || 0) + '%';
+                document.getElementById('totalVendas').innerText = data.totais.total_vendas || 0;
+                
+                // Gráfico Top Jogos
+                new Chart(document.getElementById('topJogosChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: data.top_jogos.map(j => j.jogo.length > 20 ? j.jogo.substring(0,20)+'...' : j.jogo),
+                        datasets: [{
+                            label: 'Faturamento (R$)',
+                            data: data.top_jogos.map(j => j.faturamento),
+                            backgroundColor: '#c84dff'
+                        }]
+                    },
+                    options: { responsive: true, plugins: { legend: { position: 'top' } } }
+                });
+                
+                // Gráfico Vendas Mensais
+                new Chart(document.getElementById('vendasMensalChart'), {
+                    type: 'line',
+                    data: {
+                        labels: data.vendas_mensal.map(m => m.mes).reverse(),
+                        datasets: [
+                            { label: 'Faturamento (R$)', data: data.vendas_mensal.map(m => m.faturamento).reverse(), borderColor: '#4caf50', tension: 0.3 },
+                            { label: 'Lucro (R$)', data: data.vendas_mensal.map(m => m.lucro).reverse(), borderColor: '#c84dff', tension: 0.3 }
+                        ]
+                    },
+                    options: { responsive: true }
+                });
+                
+                // Gráfico Categorias
+                new Chart(document.getElementById('categoriaChart'), {
+                    type: 'pie',
+                    data: {
+                        labels: data.lucro_categoria.map(c => c.categoria),
+                        datasets: [{ data: data.lucro_categoria.map(c => c.lucro_total), backgroundColor: ['#c84dff', '#7c3aed', '#4caf50', '#ff9800', '#f44336', '#2196f3'] }]
+                    },
+                    options: { responsive: true }
+                });
+                
+                // Gráfico Pagamentos
+                new Chart(document.getElementById('pagamentoChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.pagamentos.map(p => p.forma_pagamento),
+                        datasets: [{ data: data.pagamentos.map(p => p.faturamento), backgroundColor: ['#4caf50', '#ff9800', '#c84dff', '#f44336'] }]
+                    },
+                    options: { responsive: true }
+                });
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                document.querySelector('.dashboard-grid').innerHTML = '<div class="card" style="grid-column:span 4">❌ Erro ao carregar dados</div>';
+            }
+        }
+        
+        carregarDashboard();
+    </script>
+</body>
+</html>

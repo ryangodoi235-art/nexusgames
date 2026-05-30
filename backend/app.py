@@ -312,6 +312,94 @@ def login():
     except Exception as e:
         return jsonify({'erro': str(e)}), 500
 
+# ===================== DASHBOARD DE VENDAS =====================
+@app.route('/api/dashboard/vendas', methods=['GET'])
+def dashboard_vendas():
+    try:
+        conn = get_db()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # Totais gerais
+        cursor.execute("""
+            SELECT 
+                COUNT(*) as total_vendas,
+                SUM(faturamento) as faturamento_total,
+                SUM(lucro) as lucro_total,
+                ROUND(AVG(lucro/faturamento * 100), 1) as margem_media
+            FROM vendas
+        """)
+        totais = cursor.fetchone()
+        
+        # Top 10 jogos por faturamento
+        cursor.execute("""
+            SELECT 
+                jogo, 
+                SUM(faturamento) as faturamento,
+                SUM(quantidade_vendida) as unidades,
+                SUM(lucro) as lucro
+            FROM vendas
+            GROUP BY jogo
+            ORDER BY faturamento DESC
+            LIMIT 10
+        """)
+        top_jogos = cursor.fetchall()
+        
+        # Vendas por mês
+        cursor.execute("""
+            SELECT 
+                TO_CHAR(DATE_TRUNC('month', data_venda), 'MM/YYYY') as mes,
+                SUM(faturamento) as faturamento,
+                SUM(lucro) as lucro,
+                COUNT(*) as vendas
+            FROM vendas
+            WHERE data_venda IS NOT NULL
+            GROUP BY DATE_TRUNC('month', data_venda)
+            ORDER BY DATE_TRUNC('month', data_venda) DESC
+            LIMIT 12
+        """)
+        vendas_mensal = cursor.fetchall()
+        
+        # Lucro por categoria
+        cursor.execute("""
+            SELECT 
+                categoria,
+                SUM(lucro) as lucro_total,
+                SUM(faturamento) as faturamento_total,
+                COUNT(*) as total_vendas
+            FROM vendas
+            GROUP BY categoria
+            ORDER BY lucro_total DESC
+            LIMIT 8
+        """)
+        lucro_categoria = cursor.fetchall()
+        
+        # Formas de pagamento
+        cursor.execute("""
+            SELECT 
+                forma_pagamento,
+                COUNT(*) as total,
+                SUM(faturamento) as faturamento
+            FROM vendas
+            GROUP BY forma_pagamento
+            ORDER BY faturamento DESC
+        """)
+        pagamentos = cursor.fetchall()
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({
+            'totais': totais,
+            'top_jogos': top_jogos,
+            'vendas_mensal': vendas_mensal,
+            'lucro_categoria': lucro_categoria,
+            'pagamentos': pagamentos
+        })
+        
+    except Exception as e:
+        print(f"Erro: {e}")
+        return jsonify({'erro': str(e)}), 500
+
 if __name__ == '__main__':
     print("=" * 50)
     print("🚀 Servidor NexusGames rodando!")
