@@ -268,6 +268,12 @@ def cadastrar():
         nome = dados.get('nome')
         email = dados.get('email')
         senha = dados.get('senha')
+        cep = dados.get('cep')
+        endereco = dados.get('endereco')
+        numero = dados.get('numero')
+        complemento = dados.get('complemento')
+        cidade = dados.get('cidade')
+        estado = dados.get('estado')
         
         if not nome or len(nome) < 3:
             return jsonify({'erro': 'Nome muito curto'}), 400
@@ -280,10 +286,24 @@ def cadastrar():
         
         conn = get_db()
         cursor = conn.cursor()
+        
+        # Adicionar colunas se não existirem
+        try:
+            cursor.execute("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS cep VARCHAR(10)")
+            cursor.execute("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS endereco VARCHAR(300)")
+            cursor.execute("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS numero VARCHAR(10)")
+            cursor.execute("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS complemento VARCHAR(100)")
+            cursor.execute("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS cidade VARCHAR(100)")
+            cursor.execute("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS estado VARCHAR(2)")
+            conn.commit()
+        except Exception as e:
+            print(f"Erro ao adicionar colunas: {e}")
+        
         cursor.execute("""
-            INSERT INTO usuarios (nome, email, senha_hash)
-            VALUES (%s, %s, %s) RETURNING id
-        """, (nome, email, senha_hash))
+            INSERT INTO usuarios (nome, email, senha_hash, cep, endereco, numero, complemento, cidade, estado)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
+        """, (nome, email, senha_hash, cep, endereco, numero, complemento, cidade, estado))
+        
         usuario_id = cursor.fetchone()[0]
         conn.commit()
         cursor.close()
@@ -293,8 +313,8 @@ def cadastrar():
     except psycopg2.IntegrityError:
         return jsonify({'erro': 'Email já cadastrado'}), 400
     except Exception as e:
+        print(f"Erro: {e}")
         return jsonify({'erro': str(e)}), 500
-
 @app.route('/api/login', methods=['POST'])
 def login():
     try:
