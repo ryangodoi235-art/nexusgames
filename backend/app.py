@@ -241,6 +241,9 @@ Resposta:"""
     except Exception as e:
         return jsonify({'resposta': '❌ Erro, tente novamente!', 'sucesso': False}), 500
 
+# Depois de configurar o Gemini, adicione:
+print(f"🔑 GEMINI_API_KEY está presente: {bool(GEMINI_API_KEY)}")
+
 # =================== USUARIOS =====================
 @app.route('/api/cadastrar', methods=['POST'])
 def cadastrar():
