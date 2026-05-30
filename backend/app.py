@@ -212,23 +212,28 @@ def chatbot():
         if not pergunta:
             return jsonify({'resposta': 'Digite uma pergunta!', 'sucesso': False})
         
-        # Usar Gemini se disponível
+        # TENTAR GEMINI PRIMEIRO (antes das respostas locais)
         if gemini_model:
             try:
                 prompt = f"""Você é o NexusBot da NexusGames (loja de jogos).
 Responda de forma amigável, com emojis, em até 2 frases.
-Pergunta: {pergunta}
-Resposta:"""
+Seja criativo e ajude o usuário a escolher jogos.
+
+Pergunta do usuário: {pergunta}
+
+Resposta (como NexusBot):"""
                 resposta = gemini_model.generate_content(prompt)
-                return jsonify({'resposta': resposta.text.strip(), 'sucesso': True})
-            except:
-                pass  # Fallback para respostas locais
+                texto_resposta = resposta.text.strip()
+                return jsonify({'resposta': texto_resposta, 'sucesso': True})
+            except Exception as e:
+                print(f"Erro no Gemini: {e}")
+                # Se falhar, continua para as respostas locais
         
         # Respostas locais (fallback)
         if 'ação' in pergunta or 'acao' in pergunta:
             return jsonify({'resposta': '🎮 Recomendo: Grand Theft Auto V (R$349) ou Red Dead Redemption 2 (R$299)!', 'sucesso': True})
         if 'rpg' in pergunta:
-            return jsonify({'resposta': '🗡️ Recomendo: The Witcher 3 (R$63) ou Cyberpunk 2077 (R$249)!', 'sucesso': True})
+            return jsonify({'resposta': '🗡️ Recomendo: The Witcher 3 (R$63) ou Elden Ring (R$349)!', 'sucesso': True})
         if any(p in pergunta for p in ['olá', 'oi', 'bom dia', 'boa tarde']):
             return jsonify({'resposta': '👋 Olá! Pergunte sobre jogos, preços, entrega ou pagamento!', 'sucesso': True})
         if 'preço' in pergunta or 'preco' in pergunta:
@@ -239,6 +244,7 @@ Resposta:"""
         return jsonify({'resposta': '🤔 Tente: "recomende ação", "recomende RPG", "preços" ou "entrega"', 'sucesso': True})
         
     except Exception as e:
+        print(f"Erro no chatbot: {e}")
         return jsonify({'resposta': '❌ Erro, tente novamente!', 'sucesso': False}), 500
 
 # Depois de configurar o Gemini, adicione:
