@@ -8,6 +8,7 @@ from datetime import datetime
 import re
 import os
 import urllib.parse as urlparse
+import google.generativeai as genai
 
 app = Flask(__name__)
 CORS(app)
