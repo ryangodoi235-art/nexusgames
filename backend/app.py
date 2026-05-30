@@ -441,8 +441,201 @@ def auditoria_dataops():
             'mensagem': '✅ Auditoria DataOps: Nenhum prejuízo encontrado' if prejuizos['total_prejuizos'] == 0 else '⚠️ Existem vendas com prejuízo'
         })
         
+
+# ===================== VERIFICAÇÃO DE INTEGRIDADE =====================
+@app.route('/api/integridade', methods=['GET'])
+def verificar_integridade():
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        # Verificar tabelas principais
+        tabelas = ['jogos', 'vendas', 'comentarios', 'usuarios']
+        resultados = {}
+        
+        for tabela in tabelas:
+            cursor.execute(f"SELECT COUNT(*) FROM {tabela}")
+            count = cursor.fetchone()[0]
+            resultados[tabela] = count
+            
+            # Alerta se tabela estiver vazia (exceto vendas que pode estar vazia)
+            if count == 0 and tabela != 'vendas':
+                print(f"⚠️ Tabela {tabela} está vazia!")
+        
+        # Verificar anonimização
+        cursor.execute("SELECT COUNT(*) FROM vendas WHERE cliente LIKE 'hash_%' OR LENGTH(cliente) > 50")
+        anonimizados = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) FROM vendas")
+        total_vendas = cursor.fetchone()[0]
+        
+        cursor.close()
+        conn.close()
+        
+        # Calcular percentual de anonimização
+        perc_anonimizacao = (anonimizados / total_vendas * 100) if total_vendas > 0 else 0
+        
+        return jsonify({
+            'status': 'online',
+            'timestamp': datetime.now().isoformat(),
+            'tabelas': resultados,
+            'anonimizacao': {
+                'total_clientes': total_vendas,
+                'anonimizados': anonimizados,
+                'percentual': round(perc_anonimizacao, 2)
+            },
+            'mensagem': '✅ Sistema íntegro e seguro' if perc_anonimizacao > 80 else '⚠️ Necessário anonimizar mais registros'
+        })
+        
+    except Exception as e:
+        print(f"Erro na integridade: {e}")
+        return jsonify({'erro': str(e)}), 500
     except Exception as e:
         return jsonify({'erro': str(e)}), 500
+
+# ===================== RBAC - CONTROLE DE ACESSO =====================
+class NexusRBAC:
+    def __init__(self):
+        self.permissoes = {
+            "cliente": [
+                "ver_jogos",
+                "comprar",
+                "comentar",
+                "ver_perfil",
+                "editar_perfil"
+            ],
+            "analista": [
+                "ver_jogos",
+                "ver_dashboard",
+                "ver_metricas",
+                "ver_vendas",
+                "exportar_relatorios"
+            ],
+            "admin": ["*"]  # Todas as permissões
+        }
+    
+    def verificar(self, usuario, acao):
+        """Verifica se o usuário tem permissão para executar a ação"""
+        if not usuario:
+            return False
+        
+        # Admin tem todas as permissões
+        if usuario.get('admin') or usuario.get('perfil') == 'admin':
+            return True
+        
+        perfil = usuario.get('perfil', 'cliente')
+        permissoes_usuario = self.permissoes.get(perfil, self.permissoes['cliente'])
+        
+        return acao in permissoes_usuario
+    
+    def get_permissoes(self, usuario):
+        """Retorna todas as permissões do usuário"""
+        if not usuario:
+            return []
+        
+        if usuario.get('admin') or usuario.get('perfil') == 'admin':
+            return list(self.permissoes.keys())
+        
+        perfil = usuario.get('perfil', 'cliente')
+        return self.permissoes.get(perfil, self.permissoes['cliente'])
+
+# Instanciar o RBAC
+rbac = NexusRBAC()
+
+@app.route('/api/permissoes', methods=['GET'])
+def verificar_permissoes():
+    try:
+        # Buscar usuário logado (via token)
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        
+        if not token:
+            return jsonify({'erro': 'Token não fornecido'}), 401
+        
+        # Aqui você deve validar o token e buscar o usuário
+        # Por enquanto, vamos usar um exemplo
+        usuario = {
+            'id': 1,
+            'nome': 'Usuario Teste',
+            'perfil': 'cliente',
+            'admin': False
+        }
+        
+        permissoes = rbac.get_permissoes(usuario)
+        
+        return jsonify({
+            'usuario': usuario['nome'],
+            'perfil': 'admin' if usuario.get('admin') else usuario.get('perfil', 'cliente'),
+            'permissoes': permissoes,
+            'total_permissoes': len(permissoes)
+        })
+        
+    except Exception as e:
+        return jsonify({'erro': str(e)}), 500
+
+@app.route('/api/permissoes', methods=['GET'])
+def verificar_permissoes():
+    try:
+        # Buscar usuário logado (via token)
+        token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        
+        if not token:
+            return jsonify({'erro': 'Token não fornecido'}), 401
+        
+        # Aqui você deve validar o token e buscar o usuário
+        # Por enquanto, vamos usar um exemplo
+        usuario = {
+            'id': 1,
+            'nome': 'Usuario Teste',
+            'perfil': 'cliente',
+            'admin': False
+        }
+        
+        permissoes = rbac.get_permissoes(usuario)
+        
+        return jsonify({
+            'usuario': usuario['nome'],
+            'perfil': 'admin' if usuario.get('admin') else usuario.get('perfil', 'cliente'),
+            'permissoes': permissoes,
+            'total_permissoes': len(permissoes)
+        })
+        
+    except Exception as e:
+        return jsonify({'erro': str(e)}), 500
+
+def requer_permissao(acao):
+    """Decorator para verificar permissões antes de executar uma rota"""
+    def decorator(f):
+        from functools import wraps
+        
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            # Buscar token do header
+            token = request.headers.get('Authorization', '').replace('Bearer ', '')
+            
+            if not token:
+                return jsonify({'erro': 'Token não fornecido'}), 401
+            
+            # TODO: Validar token e buscar usuário do banco
+            # Por enquanto, simular um usuário cliente
+            usuario = {
+                'id': 1,
+                'nome': 'Usuario Teste',
+                'perfil': 'cliente',
+                'admin': False
+            }
+            
+            if not rbac.verificar(usuario, acao):
+                return jsonify({
+                    'erro': 'Acesso negado',
+                    'mensagem': f'Você não tem permissão para: {acao}'
+                }), 403
+            
+            return f(*args, **kwargs)
+        
+        return decorated_function
+    return decorator
+
+
 
 if __name__ == '__main__':
     print("=" * 50)
