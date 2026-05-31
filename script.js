@@ -31,7 +31,6 @@ function carregarUsuarioLogado() {
             };
         }
         
-        // Mostrar Dashboard Financeiro APENAS para admin
         const dashboardFinanceiroLink = document.getElementById('dashboardFinanceiroLink');
         if (dashboardFinanceiroLink) {
             if (usuarioLogado.admin === true) {
@@ -61,7 +60,6 @@ function carregarUsuarioLogado() {
 // OCULTAR ANÁLISE DE SENTIMENTOS PARA NÃO-ADMIN
 // =========================
 function ocultarAnaliseSentimentos() {
-    // Verificar se é admin
     const usuarioSalvo = localStorage.getItem('nexus_usuario');
     let isAdmin = false;
     
@@ -70,14 +68,11 @@ function ocultarAnaliseSentimentos() {
         isAdmin = usuario.admin === true;
     }
     
-    // Se não for admin, esconder a seção de análise de sentimentos
     if (!isAdmin) {
         const sentimentStats = document.getElementById('sentimentStats');
         if (sentimentStats) {
             sentimentStats.style.display = 'none';
         }
-        
-        // Também esconder o indicador de sentimento em tempo real
         const sentimentIndicator = document.getElementById('sentimentIndicator');
         if (sentimentIndicator) {
             sentimentIndicator.style.display = 'none';
@@ -144,6 +139,13 @@ function showNotification(message, type = 'success') {
     setTimeout(() => notification.remove(), 3000);
 }
 
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // =========================
 // CARRINHO
 // =========================
@@ -202,8 +204,19 @@ async function carregarJogos() {
 
     } catch (error) {
         console.error('❌ Erro ao carregar jogos:', error);
-        document.getElementById('destaquesGrid').innerHTML = '<div class="loading">❌ Erro ao carregar jogos</div>';
-        document.getElementById('todosJogosGrid').innerHTML = '<div class="loading">❌ Erro ao carregar jogos</div>';
+        
+        // Fallback com dados mockados
+        const mockJogos = [
+            { id: 1, nome: 'Grand Theft Auto V', preco: 349.00, categoria: 'Ação / Mundo Aberto', imagem_url: 'images/1.png', rating: 4.8, destaque: true },
+            { id: 2, nome: 'Red Dead Redemption 2', preco: 299.00, categoria: 'Ação / Aventura', imagem_url: 'images/2.png', rating: 4.9, destaque: true },
+            { id: 3, nome: 'The Witcher 3', preco: 63.00, categoria: 'RPG', imagem_url: 'images/5.png', rating: 4.9, destaque: true }
+        ];
+        todosJogos = mockJogos;
+        renderizarJogos(mockJogos.filter(j => j.destaque), 'destaquesGrid');
+        renderizarJogos(mockJogos, 'todosJogosGrid');
+        
+        document.getElementById('destaquesGrid').innerHTML = '<div class="loading">⚠️ Usando dados de exemplo</div>';
+        document.getElementById('todosJogosGrid').innerHTML = '<div class="loading">⚠️ Usando dados de exemplo</div>';
     }
 }
 
@@ -216,12 +229,14 @@ function renderizarJogos(jogos, containerId) {
         return;
     }
 
-    container.innerHTML = jogos.map(jogo => `
-        <div class="game-card" data-id="${jogo.id}" data-nome="${jogo.nome}" data-preco="${jogo.preco}" data-preco-fisico="${jogo.preco_fisico || (jogo.preco * 1.10)}" data-categoria="${jogo.categoria}">
+    container.innerHTML = jogos.map(jogo => {
+        const precoFisico = jogo.preco_fisico || (jogo.preco * 1.10);
+        return `
+        <div class="game-card" data-id="${jogo.id}" data-nome="${jogo.nome}" data-preco="${jogo.preco}" data-preco-fisico="${precoFisico}" data-categoria="${jogo.categoria}">
             <div class="game-badge">${jogo.destaque ? '🔥 Destaque' : '🎮 Novo'}</div>
             <button class="wishlist-btn">♡</button>
             <img src="${jogo.imagem_url || 'images/placeholder.jpg'}" alt="${jogo.nome}" onerror="this.src='images/placeholder.jpg'">
-            <h3>${jogo.nome}</h3>
+            <h3>${escapeHtml(jogo.nome)}</h3>
             <div class="game-rating">⭐ ${jogo.rating || '4.5'}/5</div>
             
             <div class="midia-opcoes">
@@ -233,13 +248,13 @@ function renderizarJogos(jogos, containerId) {
                 <label class="midia-option">
                     <input type="radio" name="midia_${jogo.id}" value="fisica">
                     <span>📀 Física</span>
-                    <strong>R$ ${parseFloat(jogo.preco_fisico || (jogo.preco * 1.10)).toFixed(2).replace('.', ',')}</strong>
+                    <strong>R$ ${parseFloat(precoFisico).toFixed(2).replace('.', ',')}</strong>
                 </label>
             </div>
             
-            <button class="buy-btn" onclick="adicionarAoCarrinho(${jogo.id}, '${jogo.nome.replace(/'/g, "\\'")}', ${jogo.preco}, ${jogo.preco_fisico || (jogo.preco * 1.10)})">Comprar</button>
+            <button class="buy-btn" onclick="adicionarAoCarrinho(${jogo.id}, '${escapeHtml(jogo.nome).replace(/'/g, "\\'")}', ${jogo.preco}, ${precoFisico})">Comprar</button>
         </div>
-    `).join('');
+    `}).join('');
 
     document.querySelectorAll('.wishlist-btn').forEach(btn => {
         btn.onclick = function(e) {
@@ -495,7 +510,6 @@ class CommentSystem {
 function initChatbot() {
     if (document.getElementById('chatbotBtn')) return;
     
-    // Criar botão do chatbot
     const btn = document.createElement('button');
     btn.id = 'chatbotBtn';
     btn.innerHTML = '💬';
@@ -518,7 +532,6 @@ function initChatbot() {
     btn.onmouseenter = () => btn.style.transform = 'scale(1.05)';
     btn.onmouseleave = () => btn.style.transform = 'scale(1)';
     
-    // Criar janela do chat
     const chatWindow = document.createElement('div');
     chatWindow.id = 'chatWindow';
     chatWindow.style.cssText = `
@@ -562,7 +575,6 @@ function initChatbot() {
     document.body.appendChild(btn);
     document.body.appendChild(chatWindow);
     
-    // Eventos
     btn.onclick = () => {
         chatWindow.style.display = 'flex';
         btn.style.display = 'none';
@@ -581,12 +593,10 @@ function initChatbot() {
         const msg = input.value.trim();
         if (!msg) return;
         
-        // Adicionar mensagem do usuário
         messagesDiv.innerHTML += `<div style="background: linear-gradient(135deg, #06b6d4, #8b5cf6); padding: 10px 15px; border-radius: 15px; max-width: 85%; align-self: flex-end; color: white;">${escapeHtml(msg)}</div>`;
         input.value = '';
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
         
-        // Mostrar "digitando"
         const loadingId = 'loading-' + Date.now();
         messagesDiv.innerHTML += `<div id="${loadingId}" style="background: #1e293b; padding: 10px 15px; border-radius: 15px; max-width: 60px; align-self: flex-start; border-left: 3px solid #06b6d4; color: #94a3b8;">🤖 <span>.</span><span>.</span><span>.</span></div>`;
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -599,21 +609,13 @@ function initChatbot() {
             });
             const data = await response.json();
             
-            // Remover "digitando"
             document.getElementById(loadingId)?.remove();
-            
             messagesDiv.innerHTML += `<div style="background: #1e293b; padding: 10px 15px; border-radius: 15px; max-width: 85%; align-self: flex-start; border-left: 3px solid #06b6d4; color: #94a3b8;">🤖 ${escapeHtml(data.resposta)}</div>`;
         } catch (error) {
             document.getElementById(loadingId)?.remove();
             messagesDiv.innerHTML += `<div style="background: #1e293b; padding: 10px 15px; border-radius: 15px; max-width: 85%; align-self: flex-start; border-left: 3px solid #06b6d4; color: #94a3b8;">🤖 Desculpe, erro de conexão. Tente novamente!</div>`;
         }
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
-    
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
     }
     
     sendBtn.onclick = sendMessage;
@@ -660,7 +662,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     carregarUsuarioLogado();
     atualizarInfoUsuario();
-    ocultarAnaliseSentimentos();  // ← OCULTAR ANÁLISE DE SENTIMENTOS SE NÃO FOR ADMIN
+    ocultarAnaliseSentimentos();
     carregarJogos();
     configurarBuscaJogos();
     carregarCarrinho();
@@ -742,7 +744,5 @@ style.textContent = `
         background: white;
         box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
-`;
-document.head.appendChild(style);
 `;
 document.head.appendChild(style);
