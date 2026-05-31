@@ -639,6 +639,54 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // =========================
+// MENU HAMBURGUER (MOBILE)
+// =========================
+function initMobileMenu() {
+    const header = document.querySelector('header');
+    const nav = document.querySelector('nav');
+    const headerActions = document.querySelector('.header-actions');
+    
+    if (window.innerWidth <= 768) {
+        if (!document.querySelector('.menu-toggle')) {
+            const menuToggle = document.createElement('button');
+            menuToggle.className = 'menu-toggle';
+            menuToggle.innerHTML = '☰';
+            menuToggle.style.cssText = 'display: block; background: none; border: 1px solid #7c3aed; color: white; font-size: 24px; padding: 8px 12px; border-radius: 8px; cursor: pointer;';
+            
+            const logoContainer = document.querySelector('.logo');
+            if (logoContainer && logoContainer.parentNode === header) {
+                logoContainer.parentNode.insertBefore(menuToggle, logoContainer.nextSibling);
+            }
+            
+            let menuOpen = false;
+            menuToggle.addEventListener('click', () => {
+                menuOpen = !menuOpen;
+                if (menuOpen) {
+                    nav.style.display = 'flex';
+                    headerActions.style.display = 'flex';
+                    menuToggle.innerHTML = '✕';
+                } else {
+                    nav.style.display = 'none';
+                    headerActions.style.display = 'none';
+                    menuToggle.innerHTML = '☰';
+                }
+            });
+            
+            nav.style.display = 'none';
+            headerActions.style.display = 'none';
+        }
+    } else {
+        const menuToggle = document.querySelector('.menu-toggle');
+        if (menuToggle) menuToggle.remove();
+        nav.style.display = 'flex';
+        headerActions.style.display = 'flex';
+    }
+}
+
+window.addEventListener('resize', initMobileMenu);
+document.addEventListener('DOMContentLoaded', initMobileMenu);
+
+// =========================
 // ESTILOS DE ANIMAÇÃO
 // =========================
 const style = document.createElement('style');
