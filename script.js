@@ -40,50 +40,50 @@ function carregarUsuarioLogado() {
                 dashboardFinanceiroLink.style.display = 'none';
             }
         }
+        
+    } else {
+        if (loginBtn) {
+            loginBtn.innerHTML = '👤 Entrar';
+            loginBtn.href = 'login.html';
+        }
+        if (logoutBtn) {
+            logoutBtn.style.display = 'none';
+        }
+        const dashboardFinanceiroLink = document.getElementById('dashboardFinanceiroLink');
+        if (dashboardFinanceiroLink) {
+            dashboardFinanceiroLink.style.display = 'none';
+        }
+    }
+    console.log('Usuário logado:', usuarioLogado);
+}
 
-        // =========================
-        // OCULTAR ANÁLISE DE SENTIMENTOS PARA NÃO-ADMIN
-        // =========================
-        function ocultarAnaliseSentimentos() {
-            // Verificar se é admin
-            const usuarioSalvo = localStorage.getItem('nexus_usuario');
-            let isAdmin = false;
-            
-            if (usuarioSalvo) {
-                const usuario = JSON.parse(usuarioSalvo);
-                isAdmin = usuario.admin === true;
-            }
-            
-            // Se não for admin, esconder a seção de análise de sentimentos
-            if (!isAdmin) {
-                const sentimentStats = document.getElementById('sentimentStats');
-                if (sentimentStats) {
-                    sentimentStats.style.display = 'none';
-                }
-                
-                // Também esconder o indicador de sentimento em tempo real
-                const sentimentIndicator = document.getElementById('sentimentIndicator');
-                if (sentimentIndicator) {
-                    sentimentIndicator.style.display = 'none';
-                }
-            }
+// =========================
+// OCULTAR ANÁLISE DE SENTIMENTOS PARA NÃO-ADMIN
+// =========================
+function ocultarAnaliseSentimentos() {
+    // Verificar se é admin
+    const usuarioSalvo = localStorage.getItem('nexus_usuario');
+    let isAdmin = false;
+    
+    if (usuarioSalvo) {
+        const usuario = JSON.parse(usuarioSalvo);
+        isAdmin = usuario.admin === true;
+    }
+    
+    // Se não for admin, esconder a seção de análise de sentimentos
+    if (!isAdmin) {
+        const sentimentStats = document.getElementById('sentimentStats');
+        if (sentimentStats) {
+            sentimentStats.style.display = 'none';
         }
-                
-            } else {
-                if (loginBtn) {
-                    loginBtn.innerHTML = '👤 Entrar';
-                    loginBtn.href = 'login.html';
-                }
-                if (logoutBtn) {
-                    logoutBtn.style.display = 'none';
-                }
-                const dashboardFinanceiroLink = document.getElementById('dashboardFinanceiroLink');
-                if (dashboardFinanceiroLink) {
-                    dashboardFinanceiroLink.style.display = 'none';
-                }
-            }
-            console.log('Usuário logado:', usuarioLogado);
+        
+        // Também esconder o indicador de sentimento em tempo real
+        const sentimentIndicator = document.getElementById('sentimentIndicator');
+        if (sentimentIndicator) {
+            sentimentIndicator.style.display = 'none';
         }
+    }
+}
 
 // =========================
 // ATUALIZAR INFO DO USUÁRIO
@@ -660,6 +660,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     carregarUsuarioLogado();
     atualizarInfoUsuario();
+    ocultarAnaliseSentimentos();  // ← OCULTAR ANÁLISE DE SENTIMENTOS SE NÃO FOR ADMIN
     carregarJogos();
     configurarBuscaJogos();
     carregarCarrinho();
@@ -741,5 +742,7 @@ style.textContent = `
         background: white;
         box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
+`;
+document.head.appendChild(style);
 `;
 document.head.appendChild(style);
