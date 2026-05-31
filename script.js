@@ -31,12 +31,13 @@ function carregarUsuarioLogado() {
             };
         }
         
-        const dashboardLink = document.querySelector('a[href="dashboard_metricas.html"]');
-        if (dashboardLink) {
+        // Mostrar Dashboard Financeiro APENAS para admin
+        const dashboardFinanceiroLink = document.getElementById('dashboardFinanceiroLink');
+        if (dashboardFinanceiroLink) {
             if (usuarioLogado.admin === true) {
-                dashboardLink.style.display = 'inline-block';
+                dashboardFinanceiroLink.style.display = 'inline-block';
             } else {
-                dashboardLink.style.display = 'none';
+                dashboardFinanceiroLink.style.display = 'none';
             }
         }
         
@@ -48,9 +49,9 @@ function carregarUsuarioLogado() {
         if (logoutBtn) {
             logoutBtn.style.display = 'none';
         }
-        const dashboardLink = document.querySelector('a[href="dashboard_metricas.html"]');
-        if (dashboardLink) {
-            dashboardLink.style.display = 'none';
+        const dashboardFinanceiroLink = document.getElementById('dashboardFinanceiroLink');
+        if (dashboardFinanceiroLink) {
+            dashboardFinanceiroLink.style.display = 'none';
         }
     }
     console.log('Usuário logado:', usuarioLogado);
