@@ -686,13 +686,13 @@ nav a:hover {
 #negativeCount { color: #ef4444; font-size: 24px; }
 #averageRating { color: #FFD700; font-weight: bold; }
 
-/* ESTRELAS DE AVALIAÇÃO */
+/* ESTRELAS DE AVALIAÇÃO - MAIORES */
 .rating-stars {
     display: flex;
     flex-direction: row-reverse;
     justify-content: flex-end;
-    gap: 8px;
-    margin: 10px 0;
+    gap: 12px;
+    margin: 15px 0;
 }
 
 .rating-stars input {
@@ -700,7 +700,7 @@ nav a:hover {
 }
 
 .rating-stars label {
-    font-size: 28px;
+    font-size: 48px;  /* AUMENTADO de 28px para 48px */
     color: #334155;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -709,13 +709,21 @@ nav a:hover {
 .rating-stars label:hover,
 .rating-stars label:hover ~ label {
     color: #FFD700 !important;
-    text-shadow: 0 0 15px #c84dff;
-    transform: scale(1.1);
+    text-shadow: 0 0 20px #c84dff;
+    transform: scale(1.15);
 }
 
 .rating-stars input:checked ~ label {
     color: #FFD700 !important;
-    text-shadow: 0 0 15px #c84dff;
+    text-shadow: 0 0 20px #c84dff;
+}
+
+/* Responsividade para telas pequenas */
+@media (max-width: 600px) {
+    .rating-stars label {
+        font-size: 36px;  /* AUMENTADO de 24px para 36px */
+        gap: 8px;
+    }
 }
 
 /* BOTÃO ENVIAR */
