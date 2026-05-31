@@ -493,8 +493,7 @@ nav a:hover {
 }
 
 /* =========================
-   FEEDBACK CYBER RESPONSIVO
-   COM ESTRELAS CORRIGIDAS
+   FEEDBACK CYBER RESPONSIVO - CORRIGIDO
 ========================= */
 
 .feedback-section {
@@ -512,35 +511,188 @@ nav a:hover {
 
 .feedback-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: 1fr 1fr;
     gap: 30px;
+    align-items: start;
 }
 
-.feedback-form-wrapper, .feedback-list-wrapper {
+/* FORMULÁRIO DE COMENTÁRIO - TAMANHO AJUSTADO */
+.feedback-form-wrapper {
     background: rgba(15, 23, 42, 0.9);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(6, 182, 212, 0.2);
     border-radius: 15px;
-    padding: 20px;
+    padding: 25px;
+    position: sticky;
+    top: 100px;
 }
 
+.form-card h3 {
+    font-size: 20px;
+    color: var(--cyber-primary);
+    margin-bottom: 20px;
+}
+
+/* CAMPO DE TEXTO DO COMENTÁRIO - MAIOR */
+#commentText {
+    width: 100%;
+    padding: 12px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    color: white;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 120px;
+    font-family: 'Share Tech Mono', monospace;
+}
+
+#commentText:focus {
+    border-color: var(--cyber-primary);
+    outline: none;
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+}
+
+/* LISTA DE COMENTÁRIOS - COM SCROLL */
+.feedback-list-wrapper {
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(6, 182, 212, 0.2);
+    border-radius: 15px;
+    padding: 25px;
+    max-height: 600px;
+    display: flex;
+    flex-direction: column;
+}
+
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.list-header h3 {
+    font-size: 18px;
+    color: var(--cyber-primary);
+}
+
+.stats-badge {
+    background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+/* Área de rolagem dos comentários */
+.feedbacks-list {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 450px;
+    padding-right: 5px;
+}
+
+/* Personalizar scroll dos comentários */
+.feedbacks-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.feedbacks-list::-webkit-scrollbar-track {
+    background: #1e293b;
+    border-radius: 10px;
+}
+
+.feedbacks-list::-webkit-scrollbar-thumb {
+    background: var(--cyber-primary);
+    border-radius: 10px;
+}
+
+/* CARDS DE COMENTÁRIOS */
 .feedback-card {
     background: #1e293b;
     border-radius: 12px;
     padding: 15px;
     margin-bottom: 15px;
     border-left: 3px solid var(--cyber-primary);
+    transition: transform 0.2s;
 }
 
-/* ============================================
-   ESTRELAS DE AVALIAÇÃO - EFEITO COMPLETO
-   ============================================ */
+.feedback-card:hover {
+    transform: translateX(5px);
+}
 
+.feedback-header-card {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.feedback-name {
+    font-weight: bold;
+    color: var(--cyber-primary);
+    font-size: 13px;
+}
+
+.feedback-date {
+    font-size: 11px;
+    color: #64748b;
+}
+
+.stars-display {
+    font-size: 13px;
+    color: #FFD700;
+    margin: 8px 0;
+}
+
+.feedback-text {
+    color: #cbd5e1;
+    font-size: 13px;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.empty-feedback {
+    text-align: center;
+    padding: 40px;
+    color: #64748b;
+}
+
+/* ESTATÍSTICAS DE SENTIMENTO */
+#sentimentStats {
+    background: #1e293b;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+}
+
+#sentimentStats > div {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+#sentimentStats div div {
+    text-align: center;
+}
+
+#positiveCount { color: #4ade80; font-size: 24px; }
+#neutralCount { color: #fbbf24; font-size: 24px; }
+#negativeCount { color: #ef4444; font-size: 24px; }
+#averageRating { color: #FFD700; font-weight: bold; }
+
+/* ESTRELAS DE AVALIAÇÃO */
 .rating-stars {
     display: flex;
     flex-direction: row-reverse;
     justify-content: flex-end;
     gap: 8px;
+    margin: 10px 0;
 }
 
 .rating-stars input {
@@ -548,13 +700,12 @@ nav a:hover {
 }
 
 .rating-stars label {
-    font-size: 32px;
-    color: #2a1f3d;
+    font-size: 28px;
+    color: #334155;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
-/* Efeito ao passar o mouse (hover) */
 .rating-stars label:hover,
 .rating-stars label:hover ~ label {
     color: #FFD700 !important;
@@ -562,33 +713,92 @@ nav a:hover {
     transform: scale(1.1);
 }
 
-/* Estrelas selecionadas (checked) */
 .rating-stars input:checked ~ label {
     color: #FFD700 !important;
     text-shadow: 0 0 15px #c84dff;
 }
 
-/* Mantém a cor das estrelas à direita da selecionada */
-.rating-stars input:checked + label,
-.rating-stars input:checked + label ~ label {
-    color: #FFD700 !important;
+/* BOTÃO ENVIAR */
+.submit-feedback-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s;
 }
 
-/* Reset para estrelas não selecionadas */
-.rating-stars input:not(:checked) ~ label {
-    color: #2a1f3d;
+.submit-feedback-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
 }
 
-/* Efeito de clique */
-.rating-stars label:active {
-    transform: scale(0.95);
+/* INPUTS DO FORMULÁRIO */
+.input-group label {
+    display: block;
+    color: #94a3b8;
+    margin-bottom: 8px;
+    font-size: 12px;
 }
 
-/* Responsividade das estrelas */
+.input-group input {
+    width: 100%;
+    padding: 10px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    color: white;
+}
+
+.input-group input:focus {
+    border-color: var(--cyber-primary);
+    outline: none;
+}
+
+/* RESPONSIVIDADE DOS COMENTÁRIOS */
+@media (max-width: 900px) {
+    .feedback-container {
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+    
+    .feedback-form-wrapper {
+        position: static;
+        top: auto;
+    }
+    
+    .feedback-list-wrapper {
+        max-height: 500px;
+    }
+    
+    .feedbacks-list {
+        max-height: 350px;
+    }
+}
+
 @media (max-width: 600px) {
     .rating-stars label {
-        font-size: 28px;
-        gap: 5px;
+        font-size: 24px;
+    }
+    
+    .feedback-card {
+        padding: 12px;
+    }
+    
+    .feedback-text {
+        font-size: 12px;
+    }
+    
+    #sentimentStats > div {
+        gap: 10px;
+    }
+    
+    #positiveCount, #neutralCount, #negativeCount {
+        font-size: 20px;
     }
 }
 
