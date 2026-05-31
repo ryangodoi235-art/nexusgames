@@ -68,14 +68,14 @@ function atualizarInfoUsuario() {
             const usuario = JSON.parse(usuarioSalvo);
             userInfo.innerHTML = `
                 ✅ Logado como: <strong>${usuario.nome}</strong>
-                <a href="meus_pedidos.html" style="margin-left: 10px; color: #c84dff;">📦 Meus Pedidos</a>
-                <a href="perfil.html" style="margin-left: 10px; color: #c84dff;">👤 Perfil</a>
+                <a href="meus_pedidos.html" style="margin-left: 10px; color: #06b6d4;">📦 Meus Pedidos</a>
+                <a href="perfil.html" style="margin-left: 10px; color: #06b6d4;">👤 Perfil</a>
                 <button onclick="logout()" style="margin-left: 10px; background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">🚪 Sair</button>
             `;
             userInfo.style.background = 'rgba(76, 175, 80, 0.1)';
             userInfo.style.color = '#4caf50';
         } else {
-            userInfo.innerHTML = `⚠️ Você não está logado. <a href="login.html" style="color: #c84dff;">Faça login</a> para comentar!`;
+            userInfo.innerHTML = `⚠️ Você não está logado. <a href="login.html" style="color: #06b6d4;">Faça login</a> para comentar!`;
             userInfo.style.background = 'rgba(255, 152, 0, 0.1)';
             userInfo.style.color = '#ff9800';
         }
@@ -103,13 +103,13 @@ function showNotification(message, type = 'success') {
         position: fixed;
         bottom: 20px;
         right: 20px;
-        background: linear-gradient(135deg, #7c3aed, #c84dff);
+        background: linear-gradient(135deg, #06b6d4, #8b5cf6);
         color: white;
         border-radius: 12px;
         z-index: 10000;
         animation: slideInRight 0.3s ease;
         font-size: 14px;
-        box-shadow: 0 0 15px rgba(124,58,237,0.5);
+        box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
     `;
     document.body.appendChild(notification);
     setTimeout(() => notification.remove(), 3000);
@@ -461,7 +461,7 @@ class CommentSystem {
 }
 
 // =========================
-// CHATBOT COMPLETO
+// CHATBOT COMPLETO - ESTILO COMMAND CENTER
 // =========================
 function initChatbot() {
     if (document.getElementById('chatbotBtn')) return;
@@ -477,13 +477,13 @@ function initChatbot() {
         width: 60px;
         height: 60px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #7c3aed, #c84dff);
+        background: linear-gradient(135deg, #06b6d4, #8b5cf6);
         border: none;
         color: white;
         font-size: 28px;
         cursor: pointer;
         z-index: 9999;
-        box-shadow: 0 0 15px rgba(124,58,237,0.5);
+        box-shadow: 0 0 20px rgba(6, 182, 212, 0.6);
         transition: transform 0.2s;
     `;
     btn.onmouseenter = () => btn.style.transform = 'scale(1.05)';
@@ -496,25 +496,25 @@ function initChatbot() {
         position: fixed;
         bottom: 90px;
         right: 20px;
-        width: 350px;
-        height: 500px;
-        background: #12121a;
+        width: 380px;
+        height: 520px;
+        background: #0f172a;
         border-radius: 15px;
-        border: 1px solid #7c3aed;
+        border: 1px solid #06b6d4;
         display: none;
         flex-direction: column;
         z-index: 9999;
         overflow: hidden;
-        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        box-shadow: 0 0 30px rgba(6, 182, 212, 0.3);
     `;
     
     chatWindow.innerHTML = `
-        <div style="background: linear-gradient(135deg, #7c3aed, #c84dff); padding: 15px; color: white; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
+        <div style="background: linear-gradient(135deg, #06b6d4, #8b5cf6); padding: 15px; color: white; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
             <span>🤖 NexusBot - Assistente</span>
             <button id="closeChat" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">✕</button>
         </div>
-        <div id="chatMessages" style="flex: 1; padding: 15px; overflow-y: auto; background: #0f0f1a; display: flex; flex-direction: column; gap: 10px;">
-            <div style="background: #1a1a2e; padding: 10px 15px; border-radius: 15px; border-left: 3px solid #c84dff; max-width: 85%; align-self: flex-start;">
+        <div id="chatMessages" style="flex: 1; padding: 15px; overflow-y: auto; background: #0a0a10; display: flex; flex-direction: column; gap: 10px;">
+            <div style="background: #1e293b; padding: 12px 15px; border-radius: 15px; border-left: 3px solid #06b6d4; max-width: 85%; align-self: flex-start; color: #94a3b8;">
                 👋 Olá! Sou o NexusBot!<br><br>
                 ❓ Você pode me perguntar:<br>
                 • "qual o preço dos jogos?"<br>
@@ -524,9 +524,9 @@ function initChatbot() {
                 • "tem promoção?"
             </div>
         </div>
-        <div style="padding: 12px; display: flex; gap: 8px; background: #12121a; border-top: 1px solid #2a1f3d;">
-            <input type="text" id="chatInput" placeholder="Digite sua mensagem..." style="flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #7c3aed; background: #1a1a2e; color: white; outline: none;">
-            <button id="sendChat" style="background: linear-gradient(135deg, #7c3aed, #c84dff); border: none; padding: 10px 18px; border-radius: 10px; color: white; cursor: pointer; font-weight: bold;">Enviar</button>
+        <div style="padding: 12px; display: flex; gap: 8px; background: #0f172a; border-top: 1px solid #06b6d4;">
+            <input type="text" id="chatInput" placeholder="Digite sua mensagem..." style="flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #06b6d4; background: #1e293b; color: white; outline: none; font-family: 'Share Tech Mono', monospace;">
+            <button id="sendChat" style="background: linear-gradient(135deg, #06b6d4, #8b5cf6); border: none; padding: 12px 20px; border-radius: 10px; color: white; cursor: pointer; font-weight: bold;">Enviar</button>
         </div>
     `;
     
@@ -553,13 +553,13 @@ function initChatbot() {
         if (!msg) return;
         
         // Adicionar mensagem do usuário
-        messagesDiv.innerHTML += `<div style="background: linear-gradient(135deg, #7c3aed, #c84dff); padding: 10px 15px; border-radius: 15px; max-width: 85%; align-self: flex-end; color: white;">${escapeHtml(msg)}</div>`;
+        messagesDiv.innerHTML += `<div style="background: linear-gradient(135deg, #06b6d4, #8b5cf6); padding: 10px 15px; border-radius: 15px; max-width: 85%; align-self: flex-end; color: white;">${escapeHtml(msg)}</div>`;
         input.value = '';
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
         
         // Mostrar "digitando"
         const loadingId = 'loading-' + Date.now();
-        messagesDiv.innerHTML += `<div id="${loadingId}" style="background: #1a1a2e; padding: 10px 15px; border-radius: 15px; max-width: 60px; align-self: flex-start; border-left: 3px solid #c84dff;">🤖 <span>.</span><span>.</span><span>.</span></div>`;
+        messagesDiv.innerHTML += `<div id="${loadingId}" style="background: #1e293b; padding: 10px 15px; border-radius: 15px; max-width: 60px; align-self: flex-start; border-left: 3px solid #06b6d4; color: #94a3b8;">🤖 <span>.</span><span>.</span><span>.</span></div>`;
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
         
         try {
@@ -573,10 +573,10 @@ function initChatbot() {
             // Remover "digitando"
             document.getElementById(loadingId)?.remove();
             
-            messagesDiv.innerHTML += `<div style="background: #1a1a2e; padding: 10px 15px; border-radius: 15px; max-width: 85%; align-self: flex-start; border-left: 3px solid #c84dff;">🤖 ${escapeHtml(data.resposta)}</div>`;
+            messagesDiv.innerHTML += `<div style="background: #1e293b; padding: 10px 15px; border-radius: 15px; max-width: 85%; align-self: flex-start; border-left: 3px solid #06b6d4; color: #94a3b8;">🤖 ${escapeHtml(data.resposta)}</div>`;
         } catch (error) {
             document.getElementById(loadingId)?.remove();
-            messagesDiv.innerHTML += `<div style="background: #1a1a2e; padding: 10px 15px; border-radius: 15px; max-width: 85%; align-self: flex-start; border-left: 3px solid #c84dff;">🤖 Desculpe, erro de conexão. Tente novamente!</div>`;
+            messagesDiv.innerHTML += `<div style="background: #1e293b; padding: 10px 15px; border-radius: 15px; max-width: 85%; align-self: flex-start; border-left: 3px solid #06b6d4; color: #94a3b8;">🤖 Desculpe, erro de conexão. Tente novamente!</div>`;
         }
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
@@ -639,54 +639,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // =========================
-// MENU HAMBURGUER (MOBILE)
-// =========================
-function initMobileMenu() {
-    const header = document.querySelector('header');
-    const nav = document.querySelector('nav');
-    const headerActions = document.querySelector('.header-actions');
-    
-    if (window.innerWidth <= 768) {
-        if (!document.querySelector('.menu-toggle')) {
-            const menuToggle = document.createElement('button');
-            menuToggle.className = 'menu-toggle';
-            menuToggle.innerHTML = '☰';
-            menuToggle.style.cssText = 'display: block; background: none; border: 1px solid #7c3aed; color: white; font-size: 24px; padding: 8px 12px; border-radius: 8px; cursor: pointer;';
-            
-            const logoContainer = document.querySelector('.logo');
-            if (logoContainer && logoContainer.parentNode === header) {
-                logoContainer.parentNode.insertBefore(menuToggle, logoContainer.nextSibling);
-            }
-            
-            let menuOpen = false;
-            menuToggle.addEventListener('click', () => {
-                menuOpen = !menuOpen;
-                if (menuOpen) {
-                    nav.style.display = 'flex';
-                    headerActions.style.display = 'flex';
-                    menuToggle.innerHTML = '✕';
-                } else {
-                    nav.style.display = 'none';
-                    headerActions.style.display = 'none';
-                    menuToggle.innerHTML = '☰';
-                }
-            });
-            
-            nav.style.display = 'none';
-            headerActions.style.display = 'none';
-        }
-    } else {
-        const menuToggle = document.querySelector('.menu-toggle');
-        if (menuToggle) menuToggle.remove();
-        nav.style.display = 'flex';
-        headerActions.style.display = 'flex';
-    }
-}
-
-window.addEventListener('resize', initMobileMenu);
-document.addEventListener('DOMContentLoaded', initMobileMenu);
-
-// =========================
 // ESTILOS DE ANIMAÇÃO
 // =========================
 const style = document.createElement('style');
@@ -705,7 +657,7 @@ style.textContent = `
         text-align: center;
         padding: 2rem;
         font-size: 1.2rem;
-        color: #c84dff;
+        color: #06b6d4;
     }
     
     .empty-feedback {
@@ -735,7 +687,7 @@ style.textContent = `
     
     .feedback-name {
         font-weight: bold;
-        color: #c84dff;
+        color: #06b6d4;
     }
     
     .feedback-date {
