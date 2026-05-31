@@ -494,6 +494,7 @@ nav a:hover {
 
 /* =========================
    FEEDBACK CYBER RESPONSIVO
+   COM ESTRELAS CORRIGIDAS
 ========================= */
 
 .feedback-section {
@@ -529,6 +530,66 @@ nav a:hover {
     padding: 15px;
     margin-bottom: 15px;
     border-left: 3px solid var(--cyber-primary);
+}
+
+/* ============================================
+   ESTRELAS DE AVALIAÇÃO - EFEITO COMPLETO
+   ============================================ */
+
+.rating-stars {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.rating-stars input {
+    display: none;
+}
+
+.rating-stars label {
+    font-size: 32px;
+    color: #2a1f3d;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Efeito ao passar o mouse (hover) */
+.rating-stars label:hover,
+.rating-stars label:hover ~ label {
+    color: #FFD700 !important;
+    text-shadow: 0 0 15px #c84dff;
+    transform: scale(1.1);
+}
+
+/* Estrelas selecionadas (checked) */
+.rating-stars input:checked ~ label {
+    color: #FFD700 !important;
+    text-shadow: 0 0 15px #c84dff;
+}
+
+/* Mantém a cor das estrelas à direita da selecionada */
+.rating-stars input:checked + label,
+.rating-stars input:checked + label ~ label {
+    color: #FFD700 !important;
+}
+
+/* Reset para estrelas não selecionadas */
+.rating-stars input:not(:checked) ~ label {
+    color: #2a1f3d;
+}
+
+/* Efeito de clique */
+.rating-stars label:active {
+    transform: scale(0.95);
+}
+
+/* Responsividade das estrelas */
+@media (max-width: 600px) {
+    .rating-stars label {
+        font-size: 28px;
+        gap: 5px;
+    }
 }
 
 /* =========================
