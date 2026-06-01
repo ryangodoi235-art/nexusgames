@@ -22,7 +22,6 @@
             position: relative;
         }
         
-        /* Efeito scanline */
         body::before {
             content: "";
             position: fixed;
@@ -43,7 +42,6 @@
             z-index: 1;
         }
         
-        /* Header estilo terminal */
         .cyber-header {
             text-align: center;
             margin-bottom: 40px;
@@ -76,7 +74,6 @@
             color: #4ade80;
         }
         
-        /* Cards de métricas */
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -133,7 +130,6 @@
             text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
         }
         
-        /* Grid de gráficos */
         .charts-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -172,7 +168,6 @@
             width: 100% !important;
         }
         
-        /* Loading spinner */
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -199,17 +194,6 @@
             to { transform: rotate(360deg); }
         }
         
-        .error-message {
-            background: rgba(239, 68, 68, 0.2);
-            border: 1px solid #ef4444;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            color: #ef4444;
-            margin: 20px;
-        }
-        
-        /* Footer */
         .cyber-footer {
             text-align: center;
             margin-top: 30px;
@@ -224,7 +208,6 @@
             color: #06b6d4;
         }
         
-        /* Botão voltar */
         .back-btn {
             display: inline-block;
             margin-bottom: 20px;
@@ -247,17 +230,6 @@
             content: "< ";
         }
         
-        /* Loading state nos cards */
-        .metric-card.loading .metric-value {
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        /* Responsivo */
         @media (max-width: 900px) {
             .dashboard-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -276,7 +248,6 @@
             }
         }
         
-        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -342,11 +313,9 @@
     </div>
     
     <script>
-        // Configuração da API
         const API_URL = window.location.origin;
-        let charts = {}; // Para armazenar instâncias dos gráficos
+        let charts = {};
         
-        // Mostrar/ocultar loading
         function mostrarLoading(mostrar) {
             let loadingDiv = document.getElementById('global-loading');
             if (mostrar && !loadingDiv) {
@@ -360,20 +329,24 @@
             }
         }
         
-        // Destruir gráficos existentes para recriar
         function destruirGraficos() {
-            if (charts.topJogos) {
-                charts.topJogos.destroy();
+            if (charts.topJogos) { charts.topJogos.destroy(); }
+            if (charts.vendasMensal) { charts.vendasMensal.destroy(); }
+            if (charts.categoria) { charts.categoria.destroy(); }
+            if (charts.pagamento) { charts.pagamento.destroy(); }
+        }
+        
+        // Função para converter número corretamente
+        function parseNumero(valor) {
+            if (valor === null || valor === undefined) return 0;
+            if (typeof valor === 'number') return valor;
+            if (typeof valor === 'string') {
+                // Remove R$ e espaços
+                let limpo = valor.replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
+                let num = parseFloat(limpo);
+                return isNaN(num) ? 0 : num;
             }
-            if (charts.vendasMensal) {
-                charts.vendasMensal.destroy();
-            }
-            if (charts.categoria) {
-                charts.categoria.destroy();
-            }
-            if (charts.pagamento) {
-                charts.pagamento.destroy();
-            }
+            return 0;
         }
         
         async function carregarDashboard() {
@@ -394,18 +367,22 @@
                     throw new Error(data.erro);
                 }
                 
-                // Verificar se os dados existem
                 if (!data.totais) {
                     throw new Error('Dados não encontrados');
                 }
                 
-                // Atualizar cards
-                document.getElementById('faturamento').innerText = 'R$ ' + (data.totais.faturamento_total || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                document.getElementById('lucro').innerText = 'R$ ' + (data.totais.lucro_total || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                document.getElementById('margem').innerText = (data.totais.margem_media || 0).toFixed(1) + '%';
-                document.getElementById('totalVendas').innerText = (data.totais.total_vendas || 0).toLocaleString('pt-BR');
+                // Converter valores para número
+                const faturamento = parseNumero(data.totais.faturamento_total);
+                const lucro = parseNumero(data.totais.lucro_total);
+                const margem = parseNumero(data.totais.margem_media);
+                const totalVendas = parseNumero(data.totais.total_vendas);
                 
-                // Destruir gráficos antigos
+                // Atualizar cards
+                document.getElementById('faturamento').innerText = 'R$ ' + faturamento.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('lucro').innerText = 'R$ ' + lucro.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                document.getElementById('margem').innerText = margem.toFixed(1) + '%';
+                document.getElementById('totalVendas').innerText = totalVendas.toLocaleString('pt-BR');
+                
                 destruirGraficos();
                 
                 // Gráfico Top Jogos
@@ -416,7 +393,7 @@
                             labels: data.top_jogos.map(j => j.jogo.length > 20 ? j.jogo.substring(0,18) + '..' : j.jogo),
                             datasets: [{
                                 label: 'Faturamento (R$)',
-                                data: data.top_jogos.map(j => j.faturamento),
+                                data: data.top_jogos.map(j => parseNumero(j.faturamento)),
                                 backgroundColor: 'rgba(6, 182, 212, 0.8)',
                                 borderColor: '#06b6d4',
                                 borderWidth: 1,
@@ -454,7 +431,7 @@
                             datasets: [
                                 { 
                                     label: 'Faturamento (R$)', 
-                                    data: mesesReversos.map(m => m.faturamento), 
+                                    data: mesesReversos.map(m => parseNumero(m.faturamento)), 
                                     borderColor: '#4ade80', 
                                     backgroundColor: 'rgba(74, 222, 128, 0.1)', 
                                     tension: 0.3, 
@@ -464,7 +441,7 @@
                                 },
                                 { 
                                     label: 'Lucro (R$)', 
-                                    data: mesesReversos.map(m => m.lucro), 
+                                    data: mesesReversos.map(m => parseNumero(m.lucro)), 
                                     borderColor: '#06b6d4', 
                                     backgroundColor: 'rgba(6, 182, 212, 0.1)', 
                                     tension: 0.3, 
@@ -493,7 +470,7 @@
                         data: {
                             labels: data.lucro_categoria.map(c => c.categoria),
                             datasets: [{ 
-                                data: data.lucro_categoria.map(c => c.lucro_total), 
+                                data: data.lucro_categoria.map(c => parseNumero(c.lucro_total)), 
                                 backgroundColor: ['#06b6d4', '#8b5cf6', '#4ade80', '#fbbf24', '#ef4444', '#f97316', '#ec4899', '#14b8a6']
                             }]
                         },
@@ -515,7 +492,7 @@
                         data: {
                             labels: data.pagamentos.map(p => p.forma_pagamento),
                             datasets: [{ 
-                                data: data.pagamentos.map(p => p.faturamento), 
+                                data: data.pagamentos.map(p => parseNumero(p.faturamento)), 
                                 backgroundColor: ['#4ade80', '#06b6d4', '#8b5cf6', '#fbbf24', '#f97316']
                             }]
                         },
@@ -533,7 +510,7 @@
                 console.log('✅ Dashboard carregado com sucesso!');
                 
             } catch (error) {
-                console.error('❌ Erro ao carregar dashboard:', error);
+                console.error('❌ Erro:', error);
                 document.querySelector('.dashboard-grid').innerHTML = `
                     <div class="metric-card" style="grid-column:span 4">
                         <h3>[ ERROR ]</h3>
@@ -546,7 +523,6 @@
             }
         }
         
-        // Recarregar a cada 5 minutos
         carregarDashboard();
         setInterval(carregarDashboard, 300000);
     </script>
