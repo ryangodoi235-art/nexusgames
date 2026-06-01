@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Command Center - NexusGames</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
         
@@ -50,7 +51,7 @@
         }
         
         .cyber-header h1 {
-            font-size: clamp(24px, 5vw, 36px);
+            font-size: 36px;
             background: linear-gradient(135deg, #06b6d4, #8b5cf6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -124,7 +125,7 @@
         }
         
         .metric-value {
-            font-size: 36px;
+            font-size: 32px;
             font-weight: bold;
             color: #4ade80;
             text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
@@ -168,32 +169,6 @@
             width: 100% !important;
         }
         
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-        }
-        
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid #06b6d4;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
         .cyber-footer {
             text-align: center;
             margin-top: 30px;
@@ -230,22 +205,28 @@
             content: "< ";
         }
         
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #06b6d4;
+            font-size: 20px;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 50px;
+            color: #ef4444;
+            font-size: 16px;
+        }
+        
         @media (max-width: 900px) {
-            .dashboard-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .charts-grid {
-                grid-template-columns: 1fr;
-            }
-            .metric-value {
-                font-size: 24px;
-            }
+            .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+            .charts-grid { grid-template-columns: 1fr; }
+            .metric-value { font-size: 24px; }
         }
         
         @media (max-width: 500px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
+            .dashboard-grid { grid-template-columns: 1fr; }
         }
         
         ::-webkit-scrollbar {
@@ -266,265 +247,321 @@
         
         <div class="cyber-header">
             <h1>COMMAND CENTER // FINANCE DASHBOARD</h1>
-            <p>./nexus --metrics --realtime</p>
+            <p>./nexus --metrics --realtime --csv-loader</p>
         </div>
         
-        <div class="dashboard-grid" id="cards">
-            <div class="metric-card">
-                <h3>[ FATURAMENTO TOTAL ]</h3>
-                <div class="metric-value" id="faturamento">--</div>
-            </div>
-            <div class="metric-card">
-                <h3>[ LUCRO TOTAL ]</h3>
-                <div class="metric-value" id="lucro">--</div>
-            </div>
-            <div class="metric-card">
-                <h3>[ MARGEM MÉDIA ]</h3>
-                <div class="metric-value" id="margem">--</div>
-            </div>
-            <div class="metric-card">
-                <h3>[ TOTAL DE VENDAS ]</h3>
-                <div class="metric-value" id="totalVendas">--</div>
-            </div>
-        </div>
+        <div id="loading" class="loading">CARREGANDO DADOS DO CSV...</div>
+        <div id="error" class="error" style="display: none;"></div>
         
-        <div class="charts-grid">
-            <div class="chart-card">
-                <h3>TOP 10 JOGOS POR FATURAMENTO</h3>
-                <canvas id="topJogosChart"></canvas>
+        <div id="dashboard-content" style="display: none;">
+            <div class="dashboard-grid">
+                <div class="metric-card"><h3>[ FATURAMENTO TOTAL ]</h3><div class="metric-value" id="faturamento">--</div></div>
+                <div class="metric-card"><h3>[ LUCRO TOTAL ]</h3><div class="metric-value" id="lucro">--</div></div>
+                <div class="metric-card"><h3>[ MARGEM MÉDIA ]</h3><div class="metric-value" id="margem">--</div></div>
+                <div class="metric-card"><h3>[ TOTAL DE VENDAS ]</h3><div class="metric-value" id="totalVendas">--</div></div>
             </div>
-            <div class="chart-card">
-                <h3>EVOLUÇÃO MENSAL</h3>
-                <canvas id="vendasMensalChart"></canvas>
+            
+            <div class="charts-grid">
+                <div class="chart-card"><h3>TOP 10 JOGOS POR FATURAMENTO</h3><canvas id="topJogosChart"></canvas></div>
+                <div class="chart-card"><h3>EVOLUÇÃO MENSAL</h3><canvas id="vendasMensalChart"></canvas></div>
+                <div class="chart-card"><h3>LUCRO POR CATEGORIA</h3><canvas id="categoriaChart"></canvas></div>
+                <div class="chart-card"><h3>FORMAS DE PAGAMENTO</h3><canvas id="pagamentoChart"></canvas></div>
             </div>
-            <div class="chart-card">
-                <h3>LUCRO POR CATEGORIA</h3>
-                <canvas id="categoriaChart"></canvas>
+            
+            <div class="cyber-footer">
+                <p>nexus_finance_pipeline.active || data_source = dashboard_jogos_com_lucro.csv || status = online</p>
             </div>
-            <div class="chart-card">
-                <h3>FORMAS DE PAGAMENTO</h3>
-                <canvas id="pagamentoChart"></canvas>
-            </div>
-        </div>
-        
-        <div class="cyber-footer">
-            <p>nexus_finance_pipeline.active || data_audit.passed = true</p>
         </div>
     </div>
     
     <script>
-        const API_URL = window.location.origin;
-        let charts = {};
-        
-        function mostrarLoading(mostrar) {
-            let loadingDiv = document.getElementById('global-loading');
-            if (mostrar && !loadingDiv) {
-                loadingDiv = document.createElement('div');
-                loadingDiv.id = 'global-loading';
-                loadingDiv.className = 'loading-overlay';
-                loadingDiv.innerHTML = '<div class="spinner"></div>';
-                document.body.appendChild(loadingDiv);
-            } else if (!mostrar && loadingDiv) {
-                loadingDiv.remove();
-            }
+        // Função para limpar valor monetário (remove R$, espaços, troca vírgula por ponto)
+        function limparValorMonetario(valor) {
+            if (!valor) return 0;
+            // Remove "R$", espaços, e troca vírgula decimal por ponto
+            let limpo = String(valor).replace(/[R$\s]/g, '').replace(/\./g, '').replace(',', '.');
+            return parseFloat(limpo) || 0;
         }
         
-        function destruirGraficos() {
-            if (charts.topJogos) { charts.topJogos.destroy(); }
-            if (charts.vendasMensal) { charts.vendasMensal.destroy(); }
-            if (charts.categoria) { charts.categoria.destroy(); }
-            if (charts.pagamento) { charts.pagamento.destroy(); }
+        // Função para extrair mês/ano da data (formato DD/MM/YYYY)
+        function extrairMesAno(dataStr) {
+            if (!dataStr) return null;
+            const partes = dataStr.split('/');
+            if (partes.length !== 3) return null;
+            return `${partes[1]}/${partes[2].slice(-2)}`; // MM/YY
         }
         
-        // Função para converter número corretamente
-        function parseNumero(valor) {
-            if (valor === null || valor === undefined) return 0;
-            if (typeof valor === 'number') return valor;
-            if (typeof valor === 'string') {
-                // Remove R$ e espaços
-                let limpo = valor.replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
-                let num = parseFloat(limpo);
-                return isNaN(num) ? 0 : num;
-            }
-            return 0;
-        }
-        
+        // Carregar e processar o CSV
         async function carregarDashboard() {
-            mostrarLoading(true);
-            
             try {
-                console.log('🔄 Carregando dados do dashboard...');
-                const response = await fetch(`${API_URL}/api/dashboard/vendas`);
+                // Tenta carregar o CSV do mesmo diretório
+                const response = await fetch('dashboard_jogos_com_lucro.csv');
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
+                    throw new Error(`Não foi possível carregar o CSV. Status: ${response.status}`);
                 }
                 
-                const data = await response.json();
-                console.log('📊 Dados recebidos:', data);
+                const csvText = await response.text();
                 
-                if (data.erro) {
-                    throw new Error(data.erro);
+                // Parse do CSV
+                const result = Papa.parse(csvText, {
+                    header: true,
+                    skipEmptyLines: true
+                });
+                
+                if (result.errors && result.errors.length > 0) {
+                    console.warn('Erros no parse do CSV:', result.errors);
                 }
                 
-                if (!data.totais) {
-                    throw new Error('Dados não encontrados');
+                const dados = result.data;
+                
+                if (!dados || dados.length === 0) {
+                    throw new Error('CSV vazio ou sem dados');
                 }
                 
-                // Converter valores para número
-                const faturamento = parseNumero(data.totais.faturamento_total);
-                const lucro = parseNumero(data.totais.lucro_total);
-                const margem = parseNumero(data.totais.margem_media);
-                const totalVendas = parseNumero(data.totais.total_vendas);
+                console.log(`Carregados ${dados.length} registros do CSV`);
                 
-                // Atualizar cards
-                document.getElementById('faturamento').innerText = 'R$ ' + faturamento.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                document.getElementById('lucro').innerText = 'R$ ' + lucro.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                document.getElementById('margem').innerText = margem.toFixed(1) + '%';
+                // ============================================
+                // PROCESSAMENTO DOS DADOS
+                // ============================================
+                
+                let faturamentoTotal = 0;
+                let lucroTotal = 0;
+                let totalVendas = 0;
+                
+                const jogosMap = new Map();
+                const mesesMap = new Map();
+                const categoriaMap = new Map();
+                const pagamentoMap = new Map();
+                
+                dados.forEach(row => {
+                    // Extrair valores
+                    const faturamento = limparValorMonetario(row.faturamento);
+                    const lucro = limparValorMonetario(row.lucro);
+                    const quantidade = parseInt(row.quantidade_vendida) || 0;
+                    const jogo = row.jogo;
+                    const categoria = row.categoria;
+                    const pagamento = row.forma_pagamento;
+                    const dataVenda = row.data_venda;
+                    
+                    // Totais
+                    faturamentoTotal += faturamento;
+                    lucroTotal += lucro;
+                    totalVendas += quantidade;
+                    
+                    // Por jogo
+                    if (jogo) {
+                        if (!jogosMap.has(jogo)) {
+                            jogosMap.set(jogo, { jogo, faturamento: 0, vendas: 0 });
+                        }
+                        jogosMap.get(jogo).faturamento += faturamento;
+                        jogosMap.get(jogo).vendas += quantidade;
+                    }
+                    
+                    // Por mês
+                    const mesAno = extrairMesAno(dataVenda);
+                    if (mesAno) {
+                        if (!mesesMap.has(mesAno)) {
+                            mesesMap.set(mesAno, { mes: mesAno, faturamento: 0, lucro: 0 });
+                        }
+                        mesesMap.get(mesAno).faturamento += faturamento;
+                        mesesMap.get(mesAno).lucro += lucro;
+                    }
+                    
+                    // Por categoria
+                    if (categoria) {
+                        if (!categoriaMap.has(categoria)) {
+                            categoriaMap.set(categoria, { categoria, faturamento: 0, lucro_total: 0 });
+                        }
+                        categoriaMap.get(categoria).faturamento += faturamento;
+                        categoriaMap.get(categoria).lucro_total += lucro;
+                    }
+                    
+                    // Por pagamento
+                    if (pagamento) {
+                        if (!pagamentoMap.has(pagamento)) {
+                            pagamentoMap.set(pagamento, { forma_pagamento: pagamento, faturamento: 0 });
+                        }
+                        pagamentoMap.get(pagamento).faturamento += faturamento;
+                    }
+                });
+                
+                // Top 10 jogos
+                const topJogos = Array.from(jogosMap.values())
+                    .sort((a, b) => b.faturamento - a.faturamento)
+                    .slice(0, 10);
+                
+                // Vendas mensais (ordenadas)
+                const mesesOrdenados = Array.from(mesesMap.values())
+                    .sort((a, b) => {
+                        const [mesA, anoA] = a.mes.split('/');
+                        const [mesB, anoB] = b.mes.split('/');
+                        if (anoA !== anoB) return parseInt(anoA) - parseInt(anoB);
+                        return parseInt(mesA) - parseInt(mesB);
+                    });
+                
+                // Lucro por categoria (ordenado)
+                const lucroCategoria = Array.from(categoriaMap.values())
+                    .sort((a, b) => b.lucro_total - a.lucro_total);
+                
+                // Formas de pagamento
+                const pagamentos = Array.from(pagamentoMap.values())
+                    .sort((a, b) => b.faturamento - a.faturamento);
+                
+                // Margem média
+                const margemMedia = faturamentoTotal > 0 ? (lucroTotal / faturamentoTotal) * 100 : 0;
+                
+                // ============================================
+                // ATUALIZAR CARDS
+                // ============================================
+                
+                function formatarMoeda(valor) {
+                    return 'R$ ' + valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                }
+                
+                document.getElementById('faturamento').innerText = formatarMoeda(faturamentoTotal);
+                document.getElementById('lucro').innerText = formatarMoeda(lucroTotal);
+                document.getElementById('margem').innerText = margemMedia.toFixed(1) + '%';
                 document.getElementById('totalVendas').innerText = totalVendas.toLocaleString('pt-BR');
                 
-                destruirGraficos();
+                // ============================================
+                // GRÁFICO: TOP 10 JOGOS
+                // ============================================
+                new Chart(document.getElementById('topJogosChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: topJogos.map(j => j.jogo.length > 20 ? j.jogo.substring(0, 18) + '..' : j.jogo),
+                        datasets: [{
+                            label: 'Faturamento (R$)',
+                            data: topJogos.map(j => j.faturamento),
+                            backgroundColor: 'rgba(6, 182, 212, 0.8)',
+                            borderColor: '#06b6d4',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { labels: { color: '#94a3b8' } },
+                            tooltip: { callbacks: { label: (ctx) => `R$ ${ctx.raw.toLocaleString('pt-BR')}` } }
+                        },
+                        scales: {
+                            y: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
+                            x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#1e293b' } }
+                        }
+                    }
+                });
                 
-                // Gráfico Top Jogos
-                if (data.top_jogos && data.top_jogos.length > 0) {
-                    charts.topJogos = new Chart(document.getElementById('topJogosChart'), {
-                        type: 'bar',
-                        data: {
-                            labels: data.top_jogos.map(j => j.jogo.length > 20 ? j.jogo.substring(0,18) + '..' : j.jogo),
-                            datasets: [{
+                // ============================================
+                // GRÁFICO: EVOLUÇÃO MENSAL
+                // ============================================
+                new Chart(document.getElementById('vendasMensalChart'), {
+                    type: 'line',
+                    data: {
+                        labels: mesesOrdenados.map(m => m.mes),
+                        datasets: [
+                            {
                                 label: 'Faturamento (R$)',
-                                data: data.top_jogos.map(j => parseNumero(j.faturamento)),
-                                backgroundColor: 'rgba(6, 182, 212, 0.8)',
-                                borderColor: '#06b6d4',
-                                borderWidth: 1,
-                                borderRadius: 4
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            plugins: {
-                                legend: { labels: { color: '#94a3b8' } }
+                                data: mesesOrdenados.map(m => m.faturamento),
+                                borderColor: '#4ade80',
+                                backgroundColor: 'rgba(74, 222, 128, 0.1)',
+                                tension: 0.3,
+                                fill: true
                             },
-                            scales: {
-                                y: { 
-                                    ticks: { color: '#94a3b8' }, 
-                                    grid: { color: '#1e293b' },
-                                    title: { display: true, text: 'R$', color: '#94a3b8' }
-                                },
-                                x: { 
-                                    ticks: { color: '#94a3b8', font: { size: 10 } }, 
-                                    grid: { color: '#1e293b' }
-                                }
+                            {
+                                label: 'Lucro (R$)',
+                                data: mesesOrdenados.map(m => m.lucro),
+                                borderColor: '#06b6d4',
+                                backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                                tension: 0.3,
+                                fill: true
                             }
-                        }
-                    });
-                }
-                
-                // Gráfico Vendas Mensais
-                if (data.vendas_mensal && data.vendas_mensal.length > 0) {
-                    const mesesReversos = [...data.vendas_mensal].reverse();
-                    charts.vendasMensal = new Chart(document.getElementById('vendasMensalChart'), {
-                        type: 'line',
-                        data: {
-                            labels: mesesReversos.map(m => m.mes),
-                            datasets: [
-                                { 
-                                    label: 'Faturamento (R$)', 
-                                    data: mesesReversos.map(m => parseNumero(m.faturamento)), 
-                                    borderColor: '#4ade80', 
-                                    backgroundColor: 'rgba(74, 222, 128, 0.1)', 
-                                    tension: 0.3, 
-                                    fill: true,
-                                    pointBackgroundColor: '#4ade80',
-                                    pointBorderColor: '#0f172a'
-                                },
-                                { 
-                                    label: 'Lucro (R$)', 
-                                    data: mesesReversos.map(m => parseNumero(m.lucro)), 
-                                    borderColor: '#06b6d4', 
-                                    backgroundColor: 'rgba(6, 182, 212, 0.1)', 
-                                    tension: 0.3, 
-                                    fill: true,
-                                    pointBackgroundColor: '#06b6d4',
-                                    pointBorderColor: '#0f172a'
-                                }
-                            ]
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { labels: { color: '#94a3b8' } },
+                            tooltip: { callbacks: { label: (ctx) => `R$ ${ctx.raw.toLocaleString('pt-BR')}` } }
                         },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            plugins: { legend: { labels: { color: '#94a3b8' } } },
-                            scales: { 
-                                y: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } }, 
-                                x: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } } 
-                            }
+                        scales: {
+                            y: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
+                            x: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { color: '#1e293b' } }
                         }
-                    });
-                }
+                    }
+                });
                 
-                // Gráfico Categorias
-                if (data.lucro_categoria && data.lucro_categoria.length > 0) {
-                    charts.categoria = new Chart(document.getElementById('categoriaChart'), {
-                        type: 'pie',
-                        data: {
-                            labels: data.lucro_categoria.map(c => c.categoria),
-                            datasets: [{ 
-                                data: data.lucro_categoria.map(c => parseNumero(c.lucro_total)), 
-                                backgroundColor: ['#06b6d4', '#8b5cf6', '#4ade80', '#fbbf24', '#ef4444', '#f97316', '#ec4899', '#14b8a6']
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            plugins: { 
-                                legend: { position: 'right', labels: { color: '#94a3b8', font: { size: 10 } } },
-                                tooltip: { callbacks: { label: (ctx) => `${ctx.label}: R$ ${ctx.raw.toLocaleString('pt-BR')}` } }
-                            }
+                // ============================================
+                // GRÁFICO: LUCRO POR CATEGORIA
+                // ============================================
+                const categoriaCores = ['#06b6d4', '#8b5cf6', '#4ade80', '#fbbf24', '#ef4444', '#f97316', '#a855f7', '#ec4899'];
+                new Chart(document.getElementById('categoriaChart'), {
+                    type: 'pie',
+                    data: {
+                        labels: lucroCategoria.map(c => c.categoria),
+                        datasets: [{
+                            data: lucroCategoria.map(c => c.lucro_total),
+                            backgroundColor: categoriaCores.slice(0, lucroCategoria.length)
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { position: 'right', labels: { color: '#94a3b8', font: { size: 10 } } },
+                            tooltip: { callbacks: { label: (ctx) => `${ctx.label}: R$ ${ctx.raw.toLocaleString('pt-BR')}` } }
                         }
-                    });
-                }
+                    }
+                });
                 
-                // Gráfico Pagamentos
-                if (data.pagamentos && data.pagamentos.length > 0) {
-                    charts.pagamento = new Chart(document.getElementById('pagamentoChart'), {
-                        type: 'doughnut',
-                        data: {
-                            labels: data.pagamentos.map(p => p.forma_pagamento),
-                            datasets: [{ 
-                                data: data.pagamentos.map(p => parseNumero(p.faturamento)), 
-                                backgroundColor: ['#4ade80', '#06b6d4', '#8b5cf6', '#fbbf24', '#f97316']
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            plugins: { 
-                                legend: { position: 'right', labels: { color: '#94a3b8', font: { size: 10 } } },
-                                tooltip: { callbacks: { label: (ctx) => `${ctx.label}: R$ ${ctx.raw.toLocaleString('pt-BR')}` } }
-                            }
+                // ============================================
+                // GRÁFICO: FORMAS DE PAGAMENTO
+                // ============================================
+                const pagamentoCores = ['#4ade80', '#06b6d4', '#8b5cf6', '#fbbf24'];
+                new Chart(document.getElementById('pagamentoChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: pagamentos.map(p => p.forma_pagamento),
+                        datasets: [{
+                            data: pagamentos.map(p => p.faturamento),
+                            backgroundColor: pagamentoCores.slice(0, pagamentos.length)
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { position: 'right', labels: { color: '#94a3b8', font: { size: 10 } } },
+                            tooltip: { callbacks: { label: (ctx) => `${ctx.label}: R$ ${ctx.raw.toLocaleString('pt-BR')}` } }
                         }
-                    });
-                }
+                    }
+                });
                 
-                console.log('✅ Dashboard carregado com sucesso!');
+                // Esconder loading e mostrar dashboard
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('dashboard-content').style.display = 'block';
+                
+                console.log('Dashboard carregado com sucesso!');
+                console.log(`Faturamento: ${formatarMoeda(faturamentoTotal)}`);
+                console.log(`Lucro: ${formatarMoeda(lucroTotal)}`);
+                console.log(`Margem: ${margemMedia.toFixed(1)}%`);
+                console.log(`Vendas: ${totalVendas}`);
+                console.log(`Categorias: ${lucroCategoria.length}`);
+                console.log(`Pagamentos: ${pagamentos.length}`);
                 
             } catch (error) {
-                console.error('❌ Erro:', error);
-                document.querySelector('.dashboard-grid').innerHTML = `
-                    <div class="metric-card" style="grid-column:span 4">
-                        <h3>[ ERROR ]</h3>
-                        <div class="metric-value" style="color: #ef4444; font-size: 14px;">${error.message}</div>
-                        <div style="margin-top: 10px;">Tente novamente mais tarde</div>
-                    </div>
-                `;
-            } finally {
-                mostrarLoading(false);
+                console.error('Erro ao carregar dashboard:', error);
+                document.getElementById('loading').style.display = 'none';
+                const errorDiv = document.getElementById('error');
+                errorDiv.style.display = 'block';
+                errorDiv.innerHTML = `[ERROR] ${error.message}<br><br>Verifique se o arquivo "dashboard_jogos_com_lucro.csv" está na mesma pasta que esta página.`;
             }
         }
         
+        // Iniciar
         carregarDashboard();
-        setInterval(carregarDashboard, 300000);
     </script>
 </body>
 </html>
