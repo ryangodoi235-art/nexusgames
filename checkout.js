@@ -52,7 +52,7 @@ function renderCheckout() {
     checkoutItems.innerHTML = "";
 
     if (savedGames.length === 0) {
-        checkoutItems.innerHTML = `<p style="color: #999; text-align: center;">Nenhum jogo no carrinho.</p>`;
+        checkoutItems.innerHTML = `<div class="empty-cart">🛒 Nenhum jogo no carrinho</div>`;
         checkoutTotal.textContent = "R$ 0,00";
         return;
     }
