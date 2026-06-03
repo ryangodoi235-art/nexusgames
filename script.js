@@ -205,7 +205,6 @@ async function carregarJogos() {
     } catch (error) {
         console.error('❌ Erro ao carregar jogos:', error);
         
-        // Fallback com dados mockados
         const mockJogos = [
             { id: 1, nome: 'Grand Theft Auto V', preco: 349.00, categoria: 'Ação / Mundo Aberto', imagem_url: 'images/1.png', rating: 4.8, destaque: true },
             { id: 2, nome: 'Red Dead Redemption 2', preco: 299.00, categoria: 'Ação / Aventura', imagem_url: 'images/2.png', rating: 4.9, destaque: true },
@@ -655,19 +654,27 @@ function initTheme() {
 }
 
 // =========================
-// EFEITO DE SOMBRA NO HEADER AO ROLAR
+// FORÇAR HEADER STICKY
 // =========================
-function initStickyHeader() {
+function forceStickyHeader() {
     const header = document.querySelector('header');
     if (!header) return;
     
-    window.addEventListener('scroll', () => {
+    // Aplicar estilos diretamente
+    header.style.position = 'sticky';
+    header.style.top = '0';
+    header.style.zIndex = '1000';
+    
+    // Sombra ao rolar
+    window.addEventListener('scroll', function() {
         if (window.scrollY > 50) {
             header.classList.add('sticky-shadow');
         } else {
             header.classList.remove('sticky-shadow');
         }
     });
+    
+    console.log('✅ Header sticky ativado');
 }
 
 // =========================
@@ -683,6 +690,6 @@ document.addEventListener('DOMContentLoaded', () => {
     configurarBuscaJogos();
     carregarCarrinho();
     initChatbot();
-    initStickyHeader();
+    forceStickyHeader();
     new CommentSystem();
 });
