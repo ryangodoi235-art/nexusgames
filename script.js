@@ -654,7 +654,35 @@ function initTheme() {
 }
 
 // =========================
-// HEADER FIXO DEFINITIVO
+// HEADER QUE DIMINUI AO ROLAR
+// =========================
+function initShrinkHeader() {
+    const header = document.querySelector('header');
+    if (!header) return;
+    
+    window.addEventListener('scroll', () => {
+        const currentScrollY = window.scrollY;
+        
+        // Adiciona a classe 'shrink' quando rolar mais de 50px
+        if (currentScrollY > 50) {
+            header.classList.add('shrink');
+        } else {
+            header.classList.remove('shrink');
+        }
+        
+        // Adiciona sombra ao rolar
+        if (currentScrollY > 20) {
+            header.classList.add('sticky-shadow');
+        } else {
+            header.classList.remove('sticky-shadow');
+        }
+    });
+    
+    console.log('✅ Header shrink ativado');
+}
+
+// =========================
+// GARANTIR HEADER FIXO
 // =========================
 function forceStickyHeader() {
     const header = document.querySelector('header');
@@ -668,15 +696,6 @@ function forceStickyHeader() {
     header.style.width = '100%';
     header.style.zIndex = '10000';
     
-    // Sombra ao rolar
-    window.addEventListener('scroll', function() {
-        if (window.scrollY > 10) {
-            header.classList.add('sticky-shadow');
-        } else {
-            header.classList.remove('sticky-shadow');
-        }
-    });
-    
     console.log('✅ Header fixo ativado');
 }
 
@@ -686,6 +705,8 @@ function forceStickyHeader() {
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM carregado - Inicializando NexusGames');
     initTheme();
+    forceStickyHeader();
+    initShrinkHeader();
     carregarUsuarioLogado();
     atualizarInfoUsuario();
     ocultarAnaliseSentimentos();
@@ -693,6 +714,5 @@ document.addEventListener('DOMContentLoaded', () => {
     configurarBuscaJogos();
     carregarCarrinho();
     initChatbot();
-    forceStickyHeader();
     new CommentSystem();
 });
