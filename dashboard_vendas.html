@@ -6,6 +6,40 @@
     <title>Command Center - NexusGames</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+
+        :root {
+    --bg-primary: #0f172a;
+    --bg-card: rgba(15, 23, 42, 0.9);
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --border-color: #06b6d4;
+    --cyber-primary: #06b6d4;
+    --cyber-secondary: #8b5cf6;
+    --cyber-green: #4ade80;
+}
+
+body.light-mode {
+    --bg-primary: #f8fafc;
+    --bg-card: rgba(255, 255, 255, 0.95);
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --border-color: #0d9488;
+    --cyber-primary: #0d9488;
+    --cyber-secondary: #7c3aed;
+    --cyber-green: #16a34a;
+}
+
+body {
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    transition: all 0.3s;
+}
+
+.metric-card, .chart-card {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+}
+        
         @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
         
         * {
