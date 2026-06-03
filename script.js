@@ -624,7 +624,6 @@ function encontrarJogo(pergunta, jogos) {
 // FUNÇÃO PRINCIPAL (INSTANTÂNEA APÓS PRIMEIRA CARGA)
 // =========================
 let jogosDisponiveis = [];
-let primeiraResposta = true;
 
 async function chatbotResponder(pergunta) {
     // Carregar jogos (só na primeira vez ou se expirou)
@@ -804,7 +803,7 @@ async function chatbotResponder(pergunta) {
 }
 
 // =========================
-// INICIALIZAR CHATBOT
+// INICIALIZAR CHATBOT - VERSÃO CORRIGIDA
 // =========================
 function initChatbot() {
     if (document.getElementById('chatbotBtn')) return;
@@ -859,10 +858,15 @@ function initChatbot() {
         <div id="chatMessages" style="flex: 1; padding: 15px; overflow-y: auto; background: #0a0a10; display: flex; flex-direction: column; gap: 10px;">
             <div style="background: #1e293b; padding: 12px 15px; border-radius: 15px; border-left: 3px solid #06b6d4; max-width: 85%; align-self: flex-start; color: #94a3b8;">
                 🤖 <strong>NexusBot - IA Independente</strong><br><br>
-                📊 <strong>Carregando dados do servidor...</strong><br>
-                ⏱️ Isso leva apenas 1 segundo na primeira vez.<br>
-                Depois disso, as respostas serão INSTANTÂNEAS!<br><br>
-                🚀 <strong>Enquanto carrega, já pode perguntar!</strong>
+                📊 Dados carregados automaticamente do servidor!<br>
+                ⏱️ Respostas instantâneas após primeira pergunta.<br><br>
+                ❓ <strong>Experimente perguntar:</strong><br>
+                • "preço do GTA V"<br>
+                • "recomende RPG"<br>
+                • "listar jogos"<br>
+                • "meu carrinho"<br>
+                • "quanto fica 100 com PIX?"<br><br>
+                🚀 <strong>Pergunte qualquer coisa sobre a loja!</strong>
             </div>
         </div>
         <div style="padding: 12px; display: flex; gap: 8px; background: #0f172a; border-top: 1px solid #06b6d4;">
@@ -882,12 +886,15 @@ function initChatbot() {
         if (jogosDisponiveis.length === 0) {
             carregarJogosChatbot().then(() => {
                 const msgDiv = document.getElementById('chatMessages');
-                if (msgDiv) {
-                    msgDiv.innerHTML += `<div style="background: #1e293b; padding: 10px 15px; border-radius: 15px; border-left: 3px solid #4ade80; max-width: 85%; align-self: flex-start; color: #94a3b8;">
-                        ✅ **Dados carregados!** ${jogosDisponiveis.length} jogos disponíveis.<br>
-                        🚀 Agora posso responder instantaneamente!
-                    </div>`;
-                    msgDiv.scrollTop = msgDiv.scrollHeight;
+                if (msgDiv && jogosDisponiveis.length > 0) {
+                    const loadingMsg = msgDiv.querySelector('.chat-loading-msg');
+                    if (!loadingMsg) {
+                        msgDiv.innerHTML += `<div class="chat-loading-msg" style="background: #1e293b; padding: 10px 15px; border-radius: 15px; border-left: 3px solid #4ade80; max-width: 85%; align-self: flex-start; color: #94a3b8;">
+                            ✅ <strong>Dados carregados!</strong> ${jogosDisponiveis.length} jogos disponíveis.<br>
+                            🚀 Agora posso responder instantaneamente!
+                        </div>`;
+                        msgDiv.scrollTop = msgDiv.scrollHeight;
+                    }
                 }
             });
         }
@@ -911,49 +918,15 @@ function initChatbot() {
         input.value = '';
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
         
-        // Resposta (pode demorar 1s na primeira vez só)
-        const resposta = await chatbotResponder(msg);
-        messagesDiv.innerHTML += `<div style="background: #1e293b; padding: 10px 15px; border-radius: 15px; max-width: 85%; align-self: flex-start; border-left: 3px solid #06b6d4; color: #94a3b8; white-space: pre-line;">🤖 ${escapeHtml(resposta)}</div>`;
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
-    
-    sendBtn.onclick = sendMessage;
-    input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendMessage();
-    });
-}
-    
-    document.body.appendChild(btn);
-    document.body.appendChild(chatWindow);
-    
-    btn.onclick = () => {
-        chatWindow.style.display = 'flex';
-        btn.style.display = 'none';
-    };
-    
-    document.getElementById('closeChat').onclick = () => {
-        chatWindow.style.display = 'none';
-        btn.style.display = 'flex';
-    };
-    
-    const sendBtn = document.getElementById('sendChat');
-    const input = document.getElementById('chatInput');
-    const messagesDiv = document.getElementById('chatMessages');
-    
-    async function sendMessage() {
-        const msg = input.value.trim();
-        if (!msg) return;
-        
-        messagesDiv.innerHTML += `<div style="background: linear-gradient(135deg, #06b6d4, #8b5cf6); padding: 10px 15px; border-radius: 15px; max-width: 85%; align-self: flex-end; color: white;">${escapeHtml(msg)}</div>`;
-        input.value = '';
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        
+        // Indicador de digitação
         const loadingId = 'loading-' + Date.now();
         messagesDiv.innerHTML += `<div id="${loadingId}" style="background: #1e293b; padding: 10px 15px; border-radius: 15px; max-width: 60px; align-self: flex-start; border-left: 3px solid #06b6d4; color: #94a3b8;">🤖 <span>.</span><span>.</span><span>.</span></div>`;
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
         
+        // Resposta
         const resposta = await chatbotResponder(msg);
         
+        // Remover indicador e adicionar resposta
         document.getElementById(loadingId)?.remove();
         messagesDiv.innerHTML += `<div style="background: #1e293b; padding: 10px 15px; border-radius: 15px; max-width: 85%; align-self: flex-start; border-left: 3px solid #06b6d4; color: #94a3b8; white-space: pre-line;">🤖 ${escapeHtml(resposta)}</div>`;
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
