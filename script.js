@@ -504,462 +504,303 @@ class CommentSystem {
 }
 
 // =========================
-// CHATBOT INTELIGENTE DINÂMICO - LÊ TODOS OS DADOS DO SITE
+// CHATBOT HÍBRIDO - RÁPIDO + INDEPENDENTE
 // =========================
 
-// Cache para armazenar dados do site
-let siteDataCache = {
+// Cache local do chatbot
+let chatbotCache = {
     jogos: [],
     comentarios: [],
-    ultimaAtualizacao: null,
-    categorias: new Set()
+    ultimaAtualizacao: 0,
+    carregando: false
 };
 
-// Tempo de cache (5 minutos)
-const CACHE_TTL = 5 * 60 * 1000;
+// Tempo de cache (10 minutos)
+const TEMPO_CACHE = 10 * 60 * 1000;
 
 // =========================
-// CARREGAR TODOS OS DADOS DO SITE DINAMICAMENTE
+// CARREGAR JOGOS DA API (SOMENTE QUANDO PRECISAR)
 // =========================
-async function carregarDadosDoSite() {
+async function carregarJogosChatbot() {
     const agora = Date.now();
     
-    // Usar cache se estiver fresco
-    if (siteDataCache.jogos.length > 0 && (agora - siteDataCache.ultimaAtualizacao) < CACHE_TTL) {
-        console.log('📦 Usando cache do chatbot');
-        return siteDataCache;
+    // Se já tem dados no cache e não expirou, retorna rápido
+    if (chatbotCache.jogos.length > 0 && (agora - chatbotCache.ultimaAtualizacao) < TEMPO_CACHE) {
+        console.log('📦 Chatbot usando cache local');
+        return chatbotCache.jogos;
     }
     
-    console.log('🔄 Carregando dados atualizados do site...');
+    // Se já está carregando, espera um pouco
+    if (chatbotCache.carregando) {
+        console.log('⏳ Chatbot aguardando carregamento...');
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return chatbotCache.jogos;
+    }
+    
+    chatbotCache.carregando = true;
+    console.log('🔄 Chatbot carregando dados do servidor...');
     
     try {
-        // Carregar jogos da API
-        const responseJogos = await fetch(`${API_URL}/api/jogos`);
-        const dataJogos = await responseJogos.json();
-        siteDataCache.jogos = dataJogos.jogos || [];
+        // Tentar carregar da API
+        const response = await fetch(`${API_URL}/api/jogos`);
+        const data = await response.json();
         
-        // Extrair categorias únicas
-        siteDataCache.categorias.clear();
-        siteDataCache.jogos.forEach(jogo => {
-            if (jogo.categoria) {
-                const cats = jogo.categoria.split(' / ');
-                cats.forEach(cat => siteDataCache.categorias.add(cat.trim()));
-                siteDataCache.categorias.add(jogo.categoria);
-            }
-        });
-        
-        // Carregar comentários para análise de opiniões
-        try {
-            const responseComentarios = await fetch(`${API_URL}/api/comentarios`);
-            const dataComentarios = await responseComentarios.json();
-            siteDataCache.comentarios = dataComentarios || [];
-        } catch (e) {
-            siteDataCache.comentarios = [];
-        }
-        
-        siteDataCache.ultimaAtualizacao = agora;
-        
-        console.log(`✅ Chatbot carregou: ${siteDataCache.jogos.length} jogos, ${siteDataCache.categorias.size} categorias, ${siteDataCache.comentarios.length} comentários`);
-        
-        return siteDataCache;
-        
-    } catch (error) {
-        console.error('❌ Erro ao carregar dados:', error);
-        return siteDataCache;
-    }
-}
-
-// =========================
-// BUSCAR JOGO POR NOME (FLEXÍVEL)
-// =========================
-function buscarJogoPorNome(pergunta, jogos) {
-    const termos = pergunta.toLowerCase();
-    
-    // Palavras-chave para identificar nome do jogo
-    const stopwords = ['preço', 'preco', 'quanto', 'custa', 'valor', 'recomenda', 'melhor', 'sobre', 'jogo', 'qual'];
-    
-    let melhorMatch = null;
-    let maiorScore = 0;
-    
-    for (let jogo of jogos) {
-        const nomeJogo = jogo.nome.toLowerCase();
-        let score = 0;
-        
-        // Verificar se o nome completo está na pergunta
-        if (termos.includes(nomeJogo)) {
-            score = 100;
+        if (data.jogos && data.jogos.length > 0) {
+            chatbotCache.jogos = data.jogos;
+            chatbotCache.ultimaAtualizacao = agora;
+            console.log(`✅ Chatbot carregou ${chatbotCache.jogos.length} jogos do servidor`);
         } else {
-            // Verificar palavras individuais
-            const palavrasNome = nomeJogo.split(' ');
-            for (let palavra of palavrasNome) {
-                if (palavra.length > 3 && termos.includes(palavra)) {
-                    score += 20;
-                }
-            }
+            // Fallback: dados padrão se API falhar
+            chatbotCache.jogos = getDadosPadrao();
+            console.log('⚠️ Chatbot usando dados padrão');
         }
-        
-        // Remover stopwords para evitar falsos positivos
-        for (let stop of stopwords) {
-            if (termos.includes(stop)) {
-                score -= 5;
-            }
-        }
-        
-        if (score > maiorScore && score > 15) {
-            maiorScore = score;
-            melhorMatch = jogo;
-        }
+    } catch (error) {
+        console.error('❌ Erro ao carregar jogos:', error);
+        chatbotCache.jogos = getDadosPadrao();
     }
     
-    return melhorMatch;
+    chatbotCache.carregando = false;
+    return chatbotCache.jogos;
 }
 
 // =========================
-// BUSCAR JOGOS POR CATEGORIA
+// DADOS PADRÃO (FALLBACK)
 // =========================
-function buscarJogosPorCategoria(pergunta, jogos) {
-    const termos = pergunta.toLowerCase();
+function getDadosPadrao() {
+    return [
+        { id: 1, nome: "Grand Theft Auto V", preco: 349.00, categoria: "Ação / Mundo Aberto", rating: 4.8, destaque: true },
+        { id: 2, nome: "Red Dead Redemption 2", preco: 299.00, categoria: "Ação / Aventura", rating: 4.9, destaque: true },
+        { id: 3, nome: "The Witcher 3: Wild Hunt", preco: 63.00, categoria: "RPG", rating: 4.9, destaque: true },
+        { id: 4, nome: "Marvel's Spider-Man 2", preco: 299.00, categoria: "Ação / Aventura", rating: 4.8, destaque: true },
+        { id: 5, nome: "EA Sports FC 25", preco: 299.00, categoria: "Esporte", rating: 4.6, destaque: false },
+        { id: 6, nome: "Elden Ring", preco: 349.00, categoria: "RPG / Soulslike", rating: 4.9, destaque: true },
+        { id: 7, nome: "Cyberpunk 2077", preco: 249.00, categoria: "RPG / Mundo Aberto", rating: 4.5, destaque: true },
+        { id: 8, nome: "God of War Ragnarök", preco: 149.00, categoria: "Ação / Aventura", rating: 4.9, destaque: true },
+        { id: 9, nome: "Forza Horizon 5", preco: 230.00, categoria: "Corrida", rating: 4.8, destaque: true },
+        { id: 10, nome: "Rainbow Six Siege", preco: 50.00, categoria: "FPS / Competitivo", rating: 4.7, destaque: false }
+    ];
+}
+
+// =========================
+// BUSCAR JOGO POR NOME (OTIMIZADO)
+// =========================
+function encontrarJogo(pergunta, jogos) {
+    const perguntaLower = pergunta.toLowerCase();
     
-    // Mapeamento de sinônimos de categorias
-    const categoriaSinonimos = {
-        'rpg': ['rpg', 'role playing', 'the witcher', 'elden', 'baldur', 'cyberpunk', 'final fantasy'],
-        'ação': ['ação', 'acao', 'aventura', 'gta', 'red dead', 'spider', 'god of war', 'uncharted'],
-        'acao': ['ação', 'acao', 'aventura', 'gta', 'red dead', 'spider', 'god of war'],
-        'corrida': ['corrida', 'forza', 'gran turismo', 'racing', 'carro', 'velocidade'],
-        'fps': ['fps', 'tiro', 'rainbow', 'battlefield', 'call of duty', 'counter', 'shooter'],
-        'esporte': ['esporte', 'futebol', 'fc 25', 'nba', 'basquete', 'fifa'],
-        'sobrevivência': ['sobrevivência', 'sobrevivencia', 'rust', 'minecraft', 'survival'],
-        'indie': ['indie', 'stardew', 'hades', 'terraria', 'independente'],
-        'soulslike': ['soulslike', 'souls', 'elden', 'dark souls', 'difícil', 'desafiador']
+    // Apelidos dos jogos
+    const apelidos = {
+        'gta': 'Grand Theft Auto V',
+        'rdr2': 'Red Dead Redemption 2',
+        'red dead': 'Red Dead Redemption 2',
+        'witcher': 'The Witcher 3: Wild Hunt',
+        'spider': "Marvel's Spider-Man 2",
+        'elden': 'Elden Ring',
+        'cyberpunk': 'Cyberpunk 2077',
+        'god of war': 'God of War Ragnarök',
+        'forza': 'Forza Horizon 5',
+        'rainbow': 'Rainbow Six Siege',
+        'r6': 'Rainbow Six Siege'
     };
     
-    let categoriaEncontrada = null;
-    
-    for (let [categoria, sinônimos] of Object.entries(categoriaSinonimos)) {
-        for (let sin of sinônimos) {
-            if (termos.includes(sin)) {
-                categoriaEncontrada = categoria;
-                break;
-            }
-        }
-        if (categoriaEncontrada) break;
-    }
-    
-    // Também verificar nas categorias reais dos jogos
-    if (!categoriaEncontrada) {
-        for (let jogo of jogos) {
-            const catLower = (jogo.categoria || '').toLowerCase();
-            if (termos.includes(catLower) || termos.includes(catLower.split('/')[0].trim())) {
-                categoriaEncontrada = jogo.categoria;
-                break;
-            }
+    // Verificar apelidos
+    for (let [apelido, nomeReal] of Object.entries(apelidos)) {
+        if (perguntaLower.includes(apelido)) {
+            return jogos.find(j => j.nome === nomeReal);
         }
     }
     
-    if (categoriaEncontrada) {
-        const jogosFiltrados = jogos.filter(jogo => 
-            (jogo.categoria || '').toLowerCase().includes(categoriaEncontrada.toLowerCase()) ||
-            categoriaSinonimos[categoriaEncontrada]?.some(s => (jogo.categoria || '').toLowerCase().includes(s))
-        );
-        
-        if (jogosFiltrados.length > 0) {
-            return {
-                categoria: categoriaEncontrada,
-                jogos: jogosFiltrados.slice(0, 5) // Top 5
-            };
+    // Busca normal
+    for (let jogo of jogos) {
+        const nomeLower = jogo.nome.toLowerCase();
+        if (perguntaLower.includes(nomeLower) || 
+            (nomeLower.split(' ')[0] && perguntaLower.includes(nomeLower.split(' ')[0]))) {
+            return jogo;
         }
     }
-    
     return null;
 }
 
 // =========================
-// ANALISAR OPINIÕES SOBRE JOGO
+// FUNÇÃO PRINCIPAL (INSTANTÂNEA APÓS PRIMEIRA CARGA)
 // =========================
-function analisarOpinioesJogo(nomeJogo, comentarios) {
-    const opinioes = comentarios.filter(c => 
-        c.comentario && c.comentario.toLowerCase().includes(nomeJogo.toLowerCase())
-    );
-    
-    if (opinioes.length === 0) return null;
-    
-    const positivos = opinioes.filter(c => c.sentimento === 'positivo').length;
-    const negativos = opinioes.filter(c => c.sentimento === 'negativo').length;
-    const mediaRating = opinioes.reduce((sum, c) => sum + (c.rating || 3), 0) / opinioes.length;
-    
-    return {
-        total: opinioes.length,
-        positivos,
-        negativos,
-        mediaRating: mediaRating.toFixed(1),
-        percentualPositivo: (positivos / opinioes.length * 100).toFixed(0)
-    };
-}
+let jogosDisponiveis = [];
+let primeiraResposta = true;
 
-// =========================
-// RECOMENDAR JOGOS BASEADO EM PREFERÊNCIA
-// =========================
-function recomendarJogos(jogos, preferencia, comentarios) {
-    let jogosRecomendados = [...jogos];
-    
-    // Filtrar por preferência se especificada
-    if (preferencia && preferencia !== 'todos') {
-        jogosRecomendados = jogosRecomendados.filter(j => 
-            (j.categoria || '').toLowerCase().includes(preferencia.toLowerCase())
-        );
+async function chatbotResponder(pergunta) {
+    // Carregar jogos (só na primeira vez ou se expirou)
+    if (jogosDisponiveis.length === 0) {
+        jogosDisponiveis = await carregarJogosChatbot();
     }
     
-    // Ordenar por rating e popularidade
-    jogosRecomendados.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    const perguntaLower = pergunta.toLowerCase().trim();
+    const jogos = jogosDisponiveis;
     
-    // Pegar top 5
-    return jogosRecomendados.slice(0, 5);
-}
-
-// =========================
-// CALCULAR PREÇO COM PIX
-// =========================
-function calcularPIX(pergunta) {
-    const numeros = pergunta.match(/\d+[.,]?\d*/g);
-    if (numeros && pergunta.toLowerCase().includes('pix')) {
-        let valor = parseFloat(numeros[0].replace(',', '.'));
+    // ===== SAUDAÇÕES (INSTANTÂNEO) =====
+    if (perguntaLower.match(/^(oi|olá|ola|bom dia|boa tarde|boa noite|hey|eae|opa)/i)) {
+        return `👋 Olá! Bem-vindo à NexusGames! 🎮\n\n` +
+               `📊 **Dados em tempo real:** ${jogos.length} jogos disponíveis\n\n` +
+               `❓ **Pergunte sobre:**\n` +
+               `• "preço do GTA V"\n` +
+               `• "recomende RPG"\n` +
+               `• "jogos de ação"\n` +
+               `• "quanto fica 100 com PIX?"\n` +
+               `• "como funciona a entrega?"\n\n` +
+               `🚀 **Como posso te ajudar hoje?**`;
+    }
+    
+    // ===== PREÇO DE UM JOGO =====
+    const jogo = encontrarJogo(pergunta, jogos);
+    if (jogo && (perguntaLower.includes('preço') || perguntaLower.includes('preco') || perguntaLower.includes('quanto') || perguntaLower.includes('custa'))) {
+        const pix = (jogo.preco * 0.90).toFixed(2);
+        const fisico = (jogo.preco * 1.10).toFixed(2);
+        return `🎮 **${jogo.nome}**\n\n` +
+               `💰 **Preços:**\n` +
+               `• Digital: R$ ${jogo.preco.toFixed(2)}\n` +
+               `• Físico: R$ ${fisico}\n` +
+               `• PIX: R$ ${pix} (10% OFF)\n\n` +
+               `⭐ Avaliação: ${jogo.rating || '4.5'}/5\n` +
+               `🏷️ Categoria: ${jogo.categoria}\n\n` +
+               `💡 Use PIX e economize R$ ${(jogo.preco * 0.10).toFixed(2)}!`;
+    }
+    
+    // ===== JOGO ALEATÓRIO =====
+    if (perguntaLower.includes('aleatório') || perguntaLower.includes('aleatorio') || perguntaLower.includes('sugira')) {
+        const aleatorio = jogos[Math.floor(Math.random() * jogos.length)];
+        return `🎲 **Jogo aleatório para você:**\n\n` +
+               `🎮 ${aleatorio.nome}\n` +
+               `💰 R$ ${aleatorio.preco.toFixed(2)} (PIX: R$ ${(aleatorio.preco * 0.90).toFixed(2)})\n` +
+               `⭐ ${aleatorio.rating || '4.5'}/5\n\n` +
+               `💡 Gostou? Use PIX e ganhe 10% de desconto!`;
+    }
+    
+    // ===== RECOMENDAÇÕES =====
+    if (perguntaLower.includes('recomenda') || perguntaLower.includes('melhor') || perguntaLower.includes('top')) {
+        let categoria = '';
+        let jogosFiltrados = [];
+        
+        if (perguntaLower.includes('rpg')) {
+            categoria = 'RPG';
+            jogosFiltrados = jogos.filter(j => j.categoria && j.categoria.includes('RPG')).sort((a,b) => (b.rating || 0) - (a.rating || 0));
+        } else if (perguntaLower.includes('ação') || perguntaLower.includes('acao') || perguntaLower.includes('aventura')) {
+            categoria = 'Ação';
+            jogosFiltrados = jogos.filter(j => j.categoria && j.categoria.includes('Ação')).sort((a,b) => (b.rating || 0) - (a.rating || 0));
+        } else if (perguntaLower.includes('corrida')) {
+            categoria = 'Corrida';
+            jogosFiltrados = jogos.filter(j => j.categoria && j.categoria.includes('Corrida')).sort((a,b) => (b.rating || 0) - (a.rating || 0));
+        } else if (perguntaLower.includes('fps') || perguntaLower.includes('tiro')) {
+            categoria = 'FPS';
+            jogosFiltrados = jogos.filter(j => j.categoria && j.categoria.includes('FPS')).sort((a,b) => (b.rating || 0) - (a.rating || 0));
+        } else if (perguntaLower.includes('esporte')) {
+            categoria = 'Esporte';
+            jogosFiltrados = jogos.filter(j => j.categoria && j.categoria.includes('Esporte')).sort((a,b) => (b.rating || 0) - (a.rating || 0));
+        } else {
+            // Recomendação geral
+            jogosFiltrados = [...jogos].sort((a,b) => (b.rating || 0) - (a.rating || 0)).slice(0, 3);
+            return `🔥 **TOP 3 JOGOS MAIS BEM AVALIADOS** 🔥\n\n` +
+                   jogosFiltrados.map((j, i) => `${i+1}. **${j.nome}**\n   ⭐ ${j.rating || '4.5'}/5 | 💰 R$ ${j.preco.toFixed(2)}`).join('\n\n') +
+                   `\n\n💡 Pergunte "preço do [nome]" para mais detalhes!`;
+        }
+        
+        if (jogosFiltrados.length > 0) {
+            return `🎯 **RECOMENDAÇÕES DE ${categoria.toUpperCase()}** 🎯\n\n` +
+                   jogosFiltrados.slice(0, 3).map((j, i) => `${i+1}. **${j.nome}**\n   ⭐ ${j.rating || '4.5'}/5 | 💰 R$ ${j.preco.toFixed(2)} (PIX: R$ ${(j.preco*0.90).toFixed(2)})`).join('\n\n') +
+                   `\n\n💡 Pergunte "preço do [nome]" para mais detalhes!`;
+        }
+    }
+    
+    // ===== LISTAR TODOS OS JOGOS =====
+    if (perguntaLower.includes('listar') || perguntaLower.includes('todos os jogos') || perguntaLower.includes('catálogo')) {
+        let resposta = `🎮 **CATÁLOGO NEXUSGAMES (${jogos.length} jogos)** 🎮\n\n`;
+        jogos.slice(0, 15).forEach(j => {
+            resposta += `• **${j.nome}** - R$ ${j.preco.toFixed(2)} (⭐ ${j.rating || '4.5'}/5)\n`;
+        });
+        if (jogos.length > 15) {
+            resposta += `\n... e mais ${jogos.length - 15} jogos disponíveis!\n`;
+        }
+        resposta += `\n💡 Digite "preço de [nome]" para mais detalhes!`;
+        return resposta;
+    }
+    
+    // ===== PREÇO COM PIX =====
+    const pixMatch = pergunta.match(/(\d+)[,.]?(\d+)?/);
+    if (pixMatch && perguntaLower.includes('pix')) {
+        let valor = parseFloat(pixMatch[0].replace(',', '.'));
         if (!isNaN(valor) && valor > 0 && valor < 10000) {
             const desconto = valor * 0.10;
             const novoValor = valor - desconto;
-            return {
-                original: valor,
-                desconto: desconto,
-                final: novoValor,
-                economia: desconto
-            };
+            return `💰 **CÁLCULO PIX NEXUSGAMES** 💰\n\n` +
+                   `Valor original: R$ ${valor.toFixed(2)}\n` +
+                   `Desconto 10%: -R$ ${desconto.toFixed(2)}\n` +
+                   `🎉 **Total com PIX: R$ ${novoValor.toFixed(2)}**\n\n` +
+                   `✅ Economia de R$ ${desconto.toFixed(2)}!`;
         }
     }
-    return null;
-}
-
-// =========================
-// FUNÇÃO PRINCIPAL DO CHATBOT - DINÂMICA
-// =========================
-async function chatbotResponder(pergunta) {
-    const perguntaLower = pergunta.toLowerCase();
     
-    // Carregar dados atualizados do site
-    const dados = await carregarDadosDoSite();
-    const jogos = dados.jogos;
-    const comentarios = dados.comentarios;
+    // ===== ENTREGA =====
+    if (perguntaLower.includes('entrega') || perguntaLower.includes('envio') || perguntaLower.includes('prazo')) {
+        return `📦 **ENTREGA NEXUSGAMES** 📦\n\n` +
+               `🎮 **DIGITAL:** Entrega instantânea após pagamento\n` +
+               `📀 **FÍSICA:** 3-7 dias úteis\n` +
+               `💰 **FRETE:** R$ 15 (Sul/Sudeste) | R$ 25 (demais)\n` +
+               `🎉 **FRETE GRÁTIS:** Compras acima de R$ 300\n\n` +
+               `📍 Acompanhe em "Meus Pedidos" após o login!`;
+    }
     
-    // ===== 1. SAUDAÇÕES =====
-    const saudacoes = ['oi', 'olá', 'bom dia', 'boa tarde', 'boa noite', 'hey', 'eae', 'opa', 'olá', 'oi bot'];
-    if (saudacoes.some(s => perguntaLower.includes(s))) {
-        return `👋 Olá! Sou o NexusBot, seu assistente virtual da NexusGames!
-
-📊 **Tenho acesso a TODOS os dados do site em tempo real:**
-
-🎮 **${jogos.length} jogos disponíveis** no catálogo
-🏷️ **${dados.categorias.size} categorias diferentes**
-💬 **${comentarios.length} avaliações da comunidade**
-
-❓ **Pergunte-me sobre:**
-• Preço de qualquer jogo (ex: "quanto custa GTA V?")
-• Recomendações por categoria (ex: "melhores jogos de RPG")
-• Opiniões da comunidade (ex: "o que acham do Elden Ring?")
-• Promoções e descontos PIX
-• Entrega, pagamento, cadastro
-
-**Como posso te ajudar hoje?** 🚀`;
+    // ===== PAGAMENTO =====
+    if (perguntaLower.includes('pagamento') || perguntaLower.includes('cartão') || perguntaLower.includes('pagar') || perguntaLower.includes('parcelar')) {
+        return `💳 **FORMAS DE PAGAMENTO** 💳\n\n` +
+               `✅ **PIX:** 10% de desconto\n` +
+               `✅ **Cartão Crédito:** até 12x sem juros\n` +
+               `✅ **Cartão Débito:** 5% desconto\n` +
+               `✅ **Boleto:** 5% desconto\n\n` +
+               `🔒 Todos os pagamentos são seguros!\n` +
+               `💡 PIX é a opção mais rápida e econômica!`;
     }
-
-    // ===== 2. LISTAR TODOS OS JOGOS =====
-    if (perguntaLower.includes('listar jogos') || perguntaLower.includes('todos os jogos') || perguntaLower.includes('catálogo') || perguntaLower.includes('catalogo')) {
-        let resposta = `🎮 **CATÁLOGO COMPLETO NEXUSGAMES (${jogos.length} jogos)**\n\n`;
-        
-        // Agrupar por categoria
-        const porCategoria = {};
-        jogos.forEach(jogo => {
-            const cat = jogo.categoria || 'Outros';
-            if (!porCategoria[cat]) porCategoria[cat] = [];
-            porCategoria[cat].push(jogo);
-        });
-        
-        for (let [categoria, lista] of Object.entries(porCategoria)) {
-            resposta += `**${categoria}** (${lista.length} jogos):\n`;
-            resposta += lista.slice(0, 3).map(j => `  • ${j.nome} - R$ ${j.preco.toFixed(2)}`).join('\n');
-            if (lista.length > 3) resposta += `\n  • ... e mais ${lista.length - 3} jogos\n`;
-            resposta += '\n';
-        }
-        
-        resposta += `\n💡 Digite "preço de [nome do jogo]" para detalhes!`;
-        return resposta;
-    }
-
-    // ===== 3. BUSCAR JOGO ESPECÍFICO =====
-    const jogoEncontrado = buscarJogoPorNome(pergunta, jogos);
-    if (jogoEncontrado) {
-        const precoFisico = (jogoEncontrado.preco * 1.10).toFixed(2);
-        const precoPIX = (jogoEncontrado.preco * 0.90).toFixed(2);
-        const opinioes = analisarOpinioesJogo(jogoEncontrado.nome, comentarios);
-        
-        let resposta = `🎮 **${jogoEncontrado.nome}**\n\n`;
-        resposta += `📌 **Categoria:** ${jogoEncontrado.categoria || 'Não especificada'}\n`;
-        resposta += `⭐ **Avaliação:** ${jogoEncontrado.rating || '4.5'}/5\n`;
-        resposta += `💰 **Preço Digital:** R$ ${jogoEncontrado.preco.toFixed(2)}\n`;
-        resposta += `📀 **Preço Físico:** R$ ${precoFisico}\n`;
-        resposta += `💚 **Preço com PIX:** R$ ${precoPIX} (10% OFF)\n\n`;
-        
-        if (opinioes) {
-            resposta += `💬 **Opinião da Comunidade:**\n`;
-            resposta += `   • ${opinioes.total} avaliações\n`;
-            resposta += `   • ${opinioes.percentualPositivo}% positivas\n`;
-            resposta += `   • Média: ${opinioes.mediaRating}/5 ⭐\n\n`;
-        }
-        
-        resposta += `💡 **Dica:** Use PIX e economize R$ ${(jogoEncontrado.preco * 0.10).toFixed(2)}!`;
-        return resposta;
-    }
-
-    // ===== 4. BUSCAR POR CATEGORIA =====
-    const categoriaResult = buscarJogosPorCategoria(pergunta, jogos);
-    if (categoriaResult && categoriaResult.jogos.length > 0) {
-        let resposta = `🎯 **${categoriaResult.categoria.toUpperCase()}** - Top Jogos:\n\n`;
-        
-        categoriaResult.jogos.forEach((jogo, idx) => {
-            resposta += `${idx + 1}. **${jogo.nome}**\n`;
-            resposta += `   💰 R$ ${jogo.preco.toFixed(2)} (PIX: R$ ${(jogo.preco * 0.90).toFixed(2)})\n`;
-            resposta += `   ⭐ ${jogo.rating || '4.5'}/5\n\n`;
-        });
-        
-        resposta += `💡 Quer saber mais sobre algum deles? Pergunte "preço de [nome do jogo]"!`;
-        return resposta;
-    }
-
-    // ===== 5. RECOMENDAÇÕES =====
-    if (perguntaLower.includes('recomenda') || perguntaLower.includes('melhor') || perguntaLower.includes('top') || perguntaLower.includes('sugestão')) {
-        let categoriaPref = null;
-        
-        if (perguntaLower.includes('rpg')) categoriaPref = 'rpg';
-        else if (perguntaLower.includes('ação') || perguntaLower.includes('acao')) categoriaPref = 'ação';
-        else if (perguntaLower.includes('corrida')) categoriaPref = 'corrida';
-        else if (perguntaLower.includes('fps')) categoriaPref = 'fps';
-        else if (perguntaLower.includes('esporte')) categoriaPref = 'esporte';
-        
-        const recomendados = recomendarJogos(jogos, categoriaPref, comentarios);
-        
-        let resposta = `🔥 **RECOMENDAÇÕES NEXUSGAMES**\n\n`;
-        
-        if (categoriaPref) {
-            resposta += `🎯 Baseado na sua preferência por **${categoriaPref.toUpperCase()}**:\n\n`;
-        }
-        
-        recomendados.forEach((jogo, idx) => {
-            resposta += `${idx + 1}. **${jogo.nome}**\n`;
-            resposta += `   📍 ${jogo.categoria || 'Geral'}\n`;
-            resposta += `   ⭐ ${jogo.rating || '4.5'}/5 | 💰 R$ ${jogo.preco.toFixed(2)}\n`;
-            resposta += `   💡 PIX: R$ ${(jogo.preco * 0.90).toFixed(2)}\n\n`;
-        });
-        
-        resposta += `✨ **Qual desses te interessou?** Pergunte o preço ou detalhes de qualquer um!`;
-        return resposta;
-    }
-
-    // ===== 6. PREÇO COM PIX =====
-    const pixCalc = calcularPIX(pergunta);
-    if (pixCalc) {
-        return `💰 **Cálculo PIX NexusGames**\n\n` +
-               `Valor original: R$ ${pixCalc.original.toFixed(2)}\n` +
-               `Desconto de 10%: -R$ ${pixCalc.desconto.toFixed(2)}\n` +
-               `🎉 **Valor com PIX: R$ ${pixCalc.final.toFixed(2)}**\n\n` +
-               `✅ Você economiza R$ ${pixCalc.economia.toFixed(2)}!\n` +
-               `💡 Aproveite o desconto em qualquer jogo do nosso catálogo!`;
-    }
-
-    // ===== 7. INFORMAÇÕES GERAIS DO SITE =====
-    if (perguntaLower.includes('quantos jogos') || perguntaLower.includes('total de jogos')) {
-        return `📊 **Estatísticas da NexusGames em tempo real:**\n\n` +
-               `🎮 **${jogos.length} jogos disponíveis** no catálogo\n` +
-               `🏷️ **${dados.categorias.size} categorias** diferentes\n` +
-               `💬 **${comentarios.length} avaliações** da comunidade\n` +
-               `💰 Preços de R$ ${Math.min(...jogos.map(j => j.preco)).toFixed(2)} a R$ ${Math.max(...jogos.map(j => j.preco)).toFixed(2)}\n\n` +
-               `💡 Digite "listar jogos" para ver o catálogo completo!`;
-    }
-
-    // ===== 8. OPINIÕES SOBRE JOGO ESPECÍFICO =====
-    if ((perguntaLower.includes('opinião') || perguntaLower.includes('o que acham') || perguntaLower.includes('vale a pena'))) {
-        const jogoParaOpiniao = buscarJogoPorNome(pergunta, jogos);
-        if (jogoParaOpiniao) {
-            const opinioes = analisarOpinioesJogo(jogoParaOpiniao.nome, comentarios);
-            if (opinioes && opinioes.total > 0) {
-                return `💬 **Opiniões sobre ${jogoParaOpiniao.nome}:**\n\n` +
-                       `📊 Baseado em ${opinioes.total} avaliações:\n` +
-                       `👍 ${opinioes.positivos} pessoas recomendam (${opinioes.percentualPositivo}%)\n` +
-                       `👎 ${opinioes.negativos} não recomendaram\n` +
-                       `⭐ Avaliação média: ${opinioes.mediaRating}/5\n\n` +
-                       `💡 **Veredito:** ${opinioes.percentualPositivo > 70 ? '🎉 Altamente recomendado pela comunidade!' : '🤔 Avaliações mistas, veja outros jogos!'}`;
-            } else {
-                return `📝 Ainda não há avaliações suficientes para ${jogoParaOpiniao.nome}.\n\n` +
-                       `💡 **Que tal comprar e deixar sua opinião?** ⭐\n` +
-                       `💰 Preço atual: R$ ${jogoParaOpiniao.preco.toFixed(2)} (PIX: R$ ${(jogoParaOpiniao.preco * 0.90).toFixed(2)})`;
-            }
+    
+    // ===== CARRINHO =====
+    if (perguntaLower.includes('carrinho')) {
+        const carrinhoAtual = JSON.parse(localStorage.getItem('checkoutGames') || '[]');
+        if (carrinhoAtual.length === 0) {
+            return `🛒 **SEU CARRINHO ESTÁ VAZIO** 🛒\n\n` +
+                   `💡 Adicione jogos clicando em "Comprar" nos cards dos jogos!\n` +
+                   `🎮 Temos ${jogos.length} jogos disponíveis para você!`;
+        } else {
+            const total = carrinhoAtual.reduce((sum, item) => sum + item.price, 0);
+            return `🛒 **SEU CARRINHO** 🛒\n\n` +
+                   carrinhoAtual.map(item => `• ${item.name} (${item.tipo_texto}) - R$ ${item.price.toFixed(2)}`).join('\n') +
+                   `\n\n💰 **Total: R$ ${total.toFixed(2)}**\n` +
+                   `💡 PIX: R$ ${(total * 0.90).toFixed(2)} (10% OFF)\n\n` +
+                   `✅ Finalize sua compra no checkout!`;
         }
     }
-
-    // ===== 9. PERGUNTAS SOBRE PREÇO EM GERAL =====
-    if (perguntaLower.includes('preço') || perguntaLower.includes('preco') || perguntaLower.includes('quanto custa')) {
-        const jogosBaratos = [...jogos].sort((a, b) => a.preco - b.preco).slice(0, 5);
-        let resposta = `💰 **Tabela de Preços NexusGames**\n\n` +
-                       `📊 Faixa de preços: R$ ${Math.min(...jogos.map(j => j.preco)).toFixed(2)} - R$ ${Math.max(...jogos.map(j => j.preco)).toFixed(2)}\n\n` +
-                       `🎮 **Jogos mais baratos:**\n`;
-        
-        jogosBaratos.forEach(jogo => {
-            resposta += `   • ${jogo.nome}: R$ ${jogo.preco.toFixed(2)} (PIX: R$ ${(jogo.preco * 0.90).toFixed(2)})\n`;
-        });
-        
-        resposta += `\n💡 **Dica especial:** Pague com PIX e ganhe 10% de desconto em qualquer jogo!\n` +
-                   `🔍 Para saber o preço de um jogo específico, digite "preço de [nome do jogo]"`;
-        
-        return resposta;
+    
+    // ===== AJUDA =====
+    if (perguntaLower.includes('ajuda') || perguntaLower.includes('o que você faz')) {
+        return `🤖 **O QUE EU POSSO FAZER:**\n\n` +
+               `🎮 **Consultar preços:** "preço do GTA V"\n` +
+               `⭐ **Recomendar jogos:** "recomende RPG" ou "melhores jogos"\n` +
+               `🏷️ **Listar por categoria:** "jogos de ação" ou "jogos de corrida"\n` +
+               `💰 **Calcular PIX:** "quanto fica 100 com PIX?"\n` +
+               `📦 **Informar entrega:** "como funciona a entrega?"\n` +
+               `💳 **Explicar pagamento:** "formas de pagamento"\n` +
+               `🛒 **Ver carrinho:** "meu carrinho"\n` +
+               `🎲 **Sugerir jogo aleatório:** "sugira um jogo"\n` +
+               `📊 **Mostrar catálogo:** "listar jogos"\n\n` +
+               `🚀 **Pergunte qualquer coisa!**`;
     }
-
-    // ===== 10. INFORMAÇÕES DE ENTREGA =====
-    if (perguntaLower.includes('entrega') || perguntaLower.includes('envio') || perguntaLower.includes('prazo') || perguntaLower.includes('frete')) {
-        return `📦 **INFORMAÇÕES DE ENTREGA NEXUSGAMES**\n\n` +
-               `🎮 **JOGOS DIGITAIS:**\n` +
-               `• Entrega instantânea após o pagamento\n` +
-               `• Disponível na biblioteca em até 5 minutos\n\n` +
-               `📀 **JOGOS FÍSICOS:**\n` +
-               `• Prazo: 3 a 7 dias úteis\n` +
-               `• Frete: R$ 15,00 (Sul e Sudeste) / R$ 25,00 (demais regiões)\n` +
-               `• Frete GRÁTIS para compras acima de R$ 300,00\n\n` +
-               `📍 Acompanhe seu pedido em "Meus Pedidos" após o login!`;
-    }
-
-    // ===== 11. FORMAS DE PAGAMENTO =====
-    if (perguntaLower.includes('pagamento') || perguntaLower.includes('pagar') || perguntaLower.includes('cartão') || perguntaLower.includes('parcelar')) {
-        return `💳 **FORMAS DE PAGAMENTO NEXUSGAMES**\n\n` +
-               `✅ **PIX:** 10% de desconto em todos os jogos\n` +
-               `✅ **Cartão de Crédito:** até 12x sem juros\n` +
-               `✅ **Cartão de Débito:** desconto de 5%\n` +
-               `✅ **Boleto Bancário:** 5% de desconto\n\n` +
-               `🔒 **Segurança:** Todos os pagamentos são processados com segurança SSL.\n` +
-               `💡 **Dica:** PIX é a forma mais rápida e com maior desconto!`;
-    }
-
-    // ===== 12. RESPOSTA PADRÃO COM SUGESTÕES =====
-    return `🤔 **Ainda estou aprendendo sobre isso!**
-
-💡 **Aqui está o que posso fazer por você:**
-
-🎮 **Consultar jogos:** "preço de GTA V"
-⭐ **Recomendações:** "recomende jogos de RPG" ou "melhores jogos"
-📊 **Estatísticas:** "quantos jogos têm na loja?"
-💬 **Opiniões:** "o que acham do Elden Ring?"
-💰 **PIX:** "quanto fica R$ 100 com PIX?"
-🏷️ **Categorias:** "jogos de corrida" ou "FPS"
-📦 **Entrega:** "como funciona a entrega?"
-💳 **Pagamento:** "formas de pagamento"
-
-📚 **Ou diga "listar jogos" para ver nosso catálogo completo!**
-
-🔍 **Tente reformular sua pergunta** - estou sempre aprendendo com novos dados! 🚀`;
+    
+    // ===== RESPOSTA PADRÃO =====
+    return `🤔 **Não entendi sua pergunta, mas posso ajudar com:**\n\n` +
+           `🎮 **Preços:** "preço do GTA V"\n` +
+           `⭐ **Recomendações:** "recomende RPG" ou "melhores jogos"\n` +
+           `🏷️ **Categorias:** "jogos de ação" ou "jogos de corrida"\n` +
+           `💰 **PIX:** "quanto fica 100 com PIX?"\n` +
+           `📦 **Entrega:** "como funciona a entrega?"\n` +
+           `💳 **Pagamento:** "formas de pagamento"\n` +
+           `🛒 **Carrinho:** "meu carrinho"\n` +
+           `🎲 **Aleatório:** "sugira um jogo"\n` +
+           `📊 **Catálogo:** "listar jogos"\n\n` +
+           `💡 **Dica:** Seja específico, ex: "preço do The Witcher 3"`;
 }
 
 // =========================
@@ -968,10 +809,10 @@ async function chatbotResponder(pergunta) {
 function initChatbot() {
     if (document.getElementById('chatbotBtn')) return;
     
-    // Botão do chatbot
+    // Botão
     const btn = document.createElement('button');
     btn.id = 'chatbotBtn';
-    btn.innerHTML = '💬';
+    btn.innerHTML = '🤖';
     btn.style.cssText = `
         position: fixed;
         bottom: 20px;
@@ -998,8 +839,8 @@ function initChatbot() {
         position: fixed;
         bottom: 90px;
         right: 20px;
-        width: 420px;
-        height: 580px;
+        width: 400px;
+        height: 550px;
         background: #0f172a;
         border-radius: 15px;
         border: 1px solid #06b6d4;
@@ -1007,39 +848,80 @@ function initChatbot() {
         flex-direction: column;
         z-index: 9999;
         overflow: hidden;
-        box-shadow: 0 0 30px rgba(6, 182, 212, 0.4);
+        box-shadow: 0 0 30px rgba(6, 182, 212, 0.3);
     `;
     
     chatWindow.innerHTML = `
         <div style="background: linear-gradient(135deg, #06b6d4, #8b5cf6); padding: 15px; color: white; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
-            <span>🤖 NexusBot 3.0 - IA Dinâmica</span>
+            <span>🤖 NexusBot - IA Independente</span>
             <button id="closeChat" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">✕</button>
         </div>
         <div id="chatMessages" style="flex: 1; padding: 15px; overflow-y: auto; background: #0a0a10; display: flex; flex-direction: column; gap: 10px;">
             <div style="background: #1e293b; padding: 12px 15px; border-radius: 15px; border-left: 3px solid #06b6d4; max-width: 85%; align-self: flex-start; color: #94a3b8;">
-                🤖 <strong>NexusBot 3.0 - IA em Tempo Real</strong><br><br>
-                📊 Tenho acesso a TODOS os dados do seu site:<br>
-                • Catálogo completo de jogos<br>
-                • Preços atualizados<br>
-                • Avaliações da comunidade<br>
-                • Informações de entrega e pagamento<br><br>
-                ❓ <strong>Experimente perguntar:</strong><br>
-                • "listar jogos"<br>
-                • "preço de GTA V"<br>
-                • "recomende jogos de RPG"<br>
-                • "quantos jogos tem na loja?"<br>
-                • "o que acham do Elden Ring?"<br><br>
-                🚀 <strong>Pergunte qualquer coisa sobre a loja!</strong>
+                🤖 <strong>NexusBot - IA Independente</strong><br><br>
+                📊 <strong>Carregando dados do servidor...</strong><br>
+                ⏱️ Isso leva apenas 1 segundo na primeira vez.<br>
+                Depois disso, as respostas serão INSTANTÂNEAS!<br><br>
+                🚀 <strong>Enquanto carrega, já pode perguntar!</strong>
             </div>
         </div>
         <div style="padding: 12px; display: flex; gap: 8px; background: #0f172a; border-top: 1px solid #06b6d4;">
             <input type="text" id="chatInput" placeholder="Digite sua pergunta..." style="flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #06b6d4; background: #1e293b; color: white; outline: none; font-family: 'Share Tech Mono', monospace;">
             <button id="sendChat" style="background: linear-gradient(135deg, #06b6d4, #8b5cf6); border: none; padding: 12px 20px; border-radius: 10px; color: white; cursor: pointer; font-weight: bold;">Enviar</button>
         </div>
-        <div style="padding: 8px; text-align: center; font-size: 10px; color: #475569; background: #0f172a;">
-            📊 Dados atualizados em tempo real via API
-        </div>
     `;
+    
+    document.body.appendChild(btn);
+    document.body.appendChild(chatWindow);
+    
+    btn.onclick = () => {
+        chatWindow.style.display = 'flex';
+        btn.style.display = 'none';
+        
+        // Pré-carregar dados quando abrir o chat
+        if (jogosDisponiveis.length === 0) {
+            carregarJogosChatbot().then(() => {
+                const msgDiv = document.getElementById('chatMessages');
+                if (msgDiv) {
+                    msgDiv.innerHTML += `<div style="background: #1e293b; padding: 10px 15px; border-radius: 15px; border-left: 3px solid #4ade80; max-width: 85%; align-self: flex-start; color: #94a3b8;">
+                        ✅ **Dados carregados!** ${jogosDisponiveis.length} jogos disponíveis.<br>
+                        🚀 Agora posso responder instantaneamente!
+                    </div>`;
+                    msgDiv.scrollTop = msgDiv.scrollHeight;
+                }
+            });
+        }
+    };
+    
+    document.getElementById('closeChat').onclick = () => {
+        chatWindow.style.display = 'none';
+        btn.style.display = 'flex';
+    };
+    
+    const sendBtn = document.getElementById('sendChat');
+    const input = document.getElementById('chatInput');
+    const messagesDiv = document.getElementById('chatMessages');
+    
+    async function sendMessage() {
+        const msg = input.value.trim();
+        if (!msg) return;
+        
+        // Mensagem do usuário
+        messagesDiv.innerHTML += `<div style="background: linear-gradient(135deg, #06b6d4, #8b5cf6); padding: 10px 15px; border-radius: 15px; max-width: 85%; align-self: flex-end; color: white;">${escapeHtml(msg)}</div>`;
+        input.value = '';
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        
+        // Resposta (pode demorar 1s na primeira vez só)
+        const resposta = await chatbotResponder(msg);
+        messagesDiv.innerHTML += `<div style="background: #1e293b; padding: 10px 15px; border-radius: 15px; max-width: 85%; align-self: flex-start; border-left: 3px solid #06b6d4; color: #94a3b8; white-space: pre-line;">🤖 ${escapeHtml(resposta)}</div>`;
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+    
+    sendBtn.onclick = sendMessage;
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
+}
     
     document.body.appendChild(btn);
     document.body.appendChild(chatWindow);
