@@ -1,3 +1,50 @@
+/* ============================================
+   TEMAS: DARK (PADRÃO) E LIGHT
+   ============================================ */
+
+:root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: rgba(15, 23, 42, 0.9);
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --border-color: #06b6d4;
+    --border-glow: rgba(6, 182, 212, 0.3);
+    --cyber-primary: #06b6d4;
+    --cyber-secondary: #8b5cf6;
+    --cyber-green: #4ade80;
+    --input-bg: #1e293b;
+    --input-border: #334155;
+    --shadow-color: rgba(6, 182, 212, 0.2);
+}
+
+body.light-mode {
+    --bg-primary: #f8fafc;
+    --bg-secondary: #e2e8f0;
+    --bg-card: rgba(255, 255, 255, 0.95);
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --border-color: #0d9488;
+    --border-glow: rgba(13, 148, 136, 0.3);
+    --cyber-primary: #0d9488;
+    --cyber-secondary: #7c3aed;
+    --cyber-green: #16a34a;
+    --input-bg: #ffffff;
+    --input-border: #cbd5e1;
+    --shadow-color: rgba(13, 148, 136, 0.15);
+}
+
+body {
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Efeito scanline apenas no dark */
+body.light-mode::before {
+    display: none;
+}
+
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
 * {
