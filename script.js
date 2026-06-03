@@ -655,6 +655,22 @@ function initTheme() {
 }
 
 // =========================
+// EFEITO DE SOMBRA NO HEADER AO ROLAR
+// =========================
+function initStickyHeader() {
+    const header = document.querySelector('header');
+    if (!header) return;
+    
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+            header.classList.add('sticky-shadow');
+        } else {
+            header.classList.remove('sticky-shadow');
+        }
+    });
+}
+
+// =========================
 // INICIALIZAÇÃO PRINCIPAL
 // =========================
 document.addEventListener('DOMContentLoaded', () => {
@@ -667,5 +683,6 @@ document.addEventListener('DOMContentLoaded', () => {
     configurarBuscaJogos();
     carregarCarrinho();
     initChatbot();
+    initStickyHeader();
     new CommentSystem();
 });
