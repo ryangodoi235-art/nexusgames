@@ -133,13 +133,19 @@ header {
     justify-content: space-between;
     align-items: center;
     padding: 15px 5%;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1000 !important;
     flex-wrap: wrap;
     gap: 15px;
     width: 100%;
     will-change: transform;
+}
+
+/* Efeito de sombra ao rolar */
+header.sticky-shadow {
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+    transition: box-shadow 0.3s ease;
 }
 
 .logo img {
