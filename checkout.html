@@ -3,94 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pagamento | NexusGames</title>
+    <title>Checkout | NexusGames</title>
     <link rel="stylesheet" href="checkout.css">
 </head>
 <body>
-
-    <div class="checkout-container">
-
-        <!-- RESUMO -->
-        <div class="order-summary">
-            <h2>🎮 Resumo do Pedido</h2>
-            <div id="checkoutItems">
-                <!-- Os jogos vão aparecer aqui -->
-            </div>
-            <div class="total">
-                <span>Total:</span>
-                <span id="checkoutTotal">R$ 0,00</span>
-            </div>
+    <div class="container">
+        <a href="index.html" class="back-btn">BACK TO NEXUS</a>
+        
+        <div class="checkout-header">
+            <h1>CHECKOUT // SECURE PAYMENT</h1>
+            <p>./nexus --checkout --encrypt</p>
         </div>
-
-        <!-- PAGAMENTO E ENDEREÇO -->
-        <div class="payment-form">
-            <h2>📦 Endereço de Entrega</h2>
-
-            <div class="input-group">
-                <label>Endereço (Rua)</label>
-                <input type="text" id="enderecoEntrega" placeholder="Nome da rua">
-            </div>
-
-            <div class="row">
-                <div class="input-group">
-                    <label>Número</label>
-                    <input type="text" id="numeroEntrega" placeholder="Nº da casa">
+        
+        <div class="checkout-grid">
+            <!-- RESUMO DO PEDIDO -->
+            <div class="card">
+                <h2>RESUMO DO PEDIDO</h2>
+                <div id="checkoutItems" class="checkout-items">
+                    <div class="empty-cart">🛒 Nenhum jogo no carrinho</div>
                 </div>
-                <div class="input-group">
-                    <label>Complemento</label>
-                    <input type="text" id="complementoEntrega" placeholder="Apto, Bloco, Casa...">
+                <div class="total">
+                    <span>TOTAL:</span>
+                    <span id="checkoutTotal">R$ 0,00</span>
                 </div>
             </div>
-
-            <div class="input-group">
-                <label>CEP</label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="cepEntrega" placeholder="00000-000" maxlength="9" style="flex: 1;">
-                    <button type="button" id="btnBuscarCEP" style="width: auto; padding: 12px 20px; background: #7c3aed; white-space: nowrap;">🔍 Buscar</button>
+            
+            <!-- PAGAMENTO E ENDEREÇO -->
+            <div class="card">
+                <h2>ENDEREÇO DE ENTREGA</h2>
+                
+                <div class="form-group">
+                    <label>RUA</label>
+                    <input type="text" id="enderecoEntrega" placeholder="Nome da rua">
                 </div>
-            </div>
-
-            <div class="row">
-                <div class="input-group">
-                    <label>Cidade</label>
-                    <input type="text" id="cidadeEntrega" placeholder="Cidade" readonly>
-                </div>
-                <div class="input-group">
-                    <label>Estado</label>
-                    <input type="text" id="estadoEntrega" placeholder="UF" readonly>
-                </div>
-            </div>
-
-            <h2 style="margin-top: 20px;">💳 Dados do Cartão</h2>
-            <form id="paymentForm">
-                <div class="input-group">
-                    <label>Nome no cartão</label>
-                    <input type="text" id="cardName" placeholder="Digite seu nome" required>
-                </div>
-
-                <div class="input-group">
-                    <label>Número do cartão</label>
-                    <input type="text" id="cardNumber" placeholder="0000 0000 0000 0000" required>
-                </div>
-
-                <div class="card-row">
-                    <div class="input-group">
-                        <label>Validade</label>
-                        <input type="text" id="cardExpiry" placeholder="MM/AA" required>
+                
+                <div class="row">
+                    <div class="form-group">
+                        <label>NÚMERO</label>
+                        <input type="text" id="numeroEntrega" placeholder="Nº">
                     </div>
-                    <div class="input-group">
-                        <label>CVV</label>
-                        <input type="text" id="cardCvv" placeholder="123" required>
+                    <div class="form-group">
+                        <label>COMPLEMENTO</label>
+                        <input type="text" id="complementoEntrega" placeholder="Apto, Bloco">
                     </div>
                 </div>
-
-                <button type="submit" class="pay-btn">Finalizar Pagamento</button>
-            </form>
-            <a href="index.html" style="display: inline-block; margin-top: 20px; color: #7c3aed; text-decoration: none; text-align: center; width: 100%;">← Voltar para a loja</a>
+                
+                <div class="form-group">
+                    <label>CEP</label>
+                    <div class="cep-group">
+                        <input type="text" id="cepEntrega" placeholder="00000-000" maxlength="9">
+                        <button type="button" id="btnBuscarCEP" class="btn-buscar">🔍 BUSCAR</button>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="form-group">
+                        <label>CIDADE</label>
+                        <input type="text" id="cidadeEntrega" placeholder="Cidade" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>ESTADO</label>
+                        <input type="text" id="estadoEntrega" placeholder="UF" readonly>
+                    </div>
+                </div>
+                
+                <h2 style="margin-top: 25px;">DADOS DO CARTÃO</h2>
+                
+                <form id="paymentForm">
+                    <div class="form-group">
+                        <label>NOME NO CARTÃO</label>
+                        <input type="text" id="cardName" placeholder="Como está no cartão" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>NÚMERO DO CARTÃO</label>
+                        <input type="text" id="cardNumber" placeholder="0000 0000 0000 0000" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="form-group">
+                            <label>VALIDADE</label>
+                            <input type="text" id="cardExpiry" placeholder="MM/AA" required>
+                        </div>
+                        <div class="form-group">
+                            <label>CVV</label>
+                            <input type="text" id="cardCvv" placeholder="123" required>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="pay-btn">FINALIZAR PAGAMENTO</button>
+                </form>
+            </div>
         </div>
-
+        
+        <footer>
+            <p>nexus_checkout.secure || payment.gateway = active</p>
+        </footer>
     </div>
-
+    
     <script src="checkout.js"></script>
 </body>
 </html>
