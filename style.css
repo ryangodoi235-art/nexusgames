@@ -1170,16 +1170,16 @@ footer {
    ========================= */
 
 /* Garantir que o header fique fixo no topo */
+/* FORÇAR HEADER STICKY */
 header {
     position: sticky !important;
     top: 0 !important;
     z-index: 1000 !important;
 }
 
-/* Efeito de sombra ao rolar */
 header.sticky-shadow {
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
     transition: box-shadow 0.3s ease;
 }
-    }
-}
+    
+
