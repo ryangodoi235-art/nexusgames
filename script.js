@@ -654,27 +654,30 @@ function initTheme() {
 }
 
 // =========================
-// FORÇAR HEADER STICKY
+// HEADER FIXO DEFINITIVO
 // =========================
 function forceStickyHeader() {
     const header = document.querySelector('header');
     if (!header) return;
     
-    // Aplicar estilos diretamente
-    header.style.position = 'sticky';
+    // Garantir que o header está fixo
+    header.style.position = 'fixed';
     header.style.top = '0';
-    header.style.zIndex = '1000';
+    header.style.left = '0';
+    header.style.right = '0';
+    header.style.width = '100%';
+    header.style.zIndex = '10000';
     
     // Sombra ao rolar
     window.addEventListener('scroll', function() {
-        if (window.scrollY > 50) {
+        if (window.scrollY > 10) {
             header.classList.add('sticky-shadow');
         } else {
             header.classList.remove('sticky-shadow');
         }
     });
     
-    console.log('✅ Header sticky ativado');
+    console.log('✅ Header fixo ativado');
 }
 
 // =========================
